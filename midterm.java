@@ -7,6 +7,7 @@ public class midterm {
 		Scanner keyboard = new Scanner(System.in);
 		ArrayList<Course> courseList = new ArrayList<Course>();
 		ArrayList<Student> studentList = new ArrayList<Student>();
+		ArrayList<Enrollment> enrollmentList = new ArrayList<Enrollment>;
 		int choice, gradeChoice;;
 		
 		do {
@@ -16,15 +17,18 @@ public class midterm {
 			
 			switch(choice) {
 			case 1:
+				System.out.println("Creating New Student")
 				Student newStudent = createStudent(keyboard);
 				studentList.add(newStudent);
 				break;
 			case 2:
+				System.out.println("Creating New Course");
 				Course newCourse = createCourse(keyboard);
 				courseList.add(newCourse);
 				break;
 			case 3:
-				System.out.println("Creating Enrollment");
+				// Enrollment newEnrollment = createEnrollment(keyboard);
+				System.out.println("Creating New Enrollment");
 				break;
 			case 4:
 				System.out.println("Edit Student");
@@ -36,13 +40,15 @@ public class midterm {
 				System.out.println("Edit Enrollment");
 				break;
 			case 7:
-				System.out.println("Display Student");
+				System.out.println("Student List");
+				displayStudents();				
 				break;
 			case 8:
-				System.out.println("Display Course");
+				System.out.println("Course List");
+				displayCourses();
 				break;
 			case 9:
-				System.out.println("Display Enrollment");
+				displayEnrollments();
 				break;
 			case 10:
 				do {
@@ -140,6 +146,28 @@ public class midterm {
 		
 		return new Course(id, name, instr, dept);
 		
+	}
+
+	public static void editStudent(Scanner keyboard) {
+		// TODO: logic for editing student
+	}
+
+	public static void displayStudents(ArrayList<Student> studentList) {
+		for(int i = 0; i < studenttList.size(); i++) {
+			System.out.println(studentList[i]);
+		}
+	}
+
+	public static void displayCourses(ArrayList<Course> courseList) {
+		for(int i = 0; i < courseList.size(); i++) {
+			System.out.println(couseList[i]);
+		}
+	}
+
+	public static void displayEnrollments(ArrayList<Enrollment> enrollemntList) {
+		for(int i = 0; i < enrollmentList.size(); i++) {
+			System.out.println(enrollmentList[i]);
+		}
 	}
 
 }
