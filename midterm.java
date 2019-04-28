@@ -9,8 +9,10 @@ public class midterm {
 		ArrayList<Course> courseList = new ArrayList<Course>();
 		ArrayList<Student> studentList = new ArrayList<Student>();
 		ArrayList<Enrollment> enrollmentList = new ArrayList<Enrollment>();
-		int choice, gradeChoice;;
+		int choice, gradeChoice, num, year, possID;
+		String text, sem;
 		
+		System.out.println("Welcome to University Enrollment");
 		do {
 			showMainMenu();
 			choice = toValidInt(keyboard.nextLine());
@@ -20,50 +22,124 @@ public class midterm {
 			case 1:
 				System.out.println("Creating New Student");
 				Student newStudent = createStudent(keyboard);
+				System.out.println("New Student");
+				System.out.println("-----------------------------------");
+				System.out.println(newStudent);
+				System.out.println("-----------------------------------");
 				studentList.add(newStudent);
 				break;
 			case 2:
 				System.out.println("Creating New Course");
 				Course newCourse = createCourse(keyboard);
+				System.out.println("New Course");
+				System.out.println("-----------------------------------");
+				System.out.println(newCourse);
+				System.out.println("-----------------------------------");
 				courseList.add(newCourse);
 				break;
 			case 3:
-				// Enrollment newEnrollment = createEnrollment(keyboard);
 				System.out.println("Creating New Enrollment");
+				if(canCreateEnrollment(studentList, courseList)) {
+					System.out.println("Please enter a Student id number:");
+					int stid = toValidInt(keyboard.nextLine());
+					System.out.println("Please enter a Course id number: ");
+					int ctid = toValidInt(keyboard.nextLine());
+					if(isValidStudent(studentList, stid) && isValidCourse(courseList, ctid)) {
+						System.out.println("Student: \n" + getStudent(studentList, stid));
+						System.out.println("Course: \n" + getCourse(courseList, ctid));
+						System.out.println("Please enter an enrollment year: ");
+						year = toValidInt(keyboard.nextLine());
+						System.out.println("Please enter a sememster: ");
+						sem = keyboard.nextLine();
+						Enrollment newEnrollment = createEnrollment(year, sem, stid, ctid);
+						System.out.println("New Enrollment");
+						System.out.println("-----------------------------------");
+						System.out.println(newEnrollment);
+						System.out.println("-----------------------------------");
+						enrollmentList.add(newEnrollment);
+					} else {
+						System.out.println("Not a valid student id and/or course id.");
+					}
+				} else {
+					System.out.println("There are not enought students and/or courses for enrollment.");
+				}
+
 				break;
 			case 4:
 				System.out.println("Editing Student");
-				System.out.println("Please enter the Student id number.");
+				System.out.println("Please enter the Student id number: ");
 				int sID = toValidInt(keyboard.nextLine());
 				if(isValidStudent(studentList, sID)) {
-					editStudent(keyboard, studentList.get(sID - 1));
+					editStudent(keyboard, getStudent(studentList, sID));
 				} else {
 					tryAgain();
 				}
 				break;
 			case 5:
-				System.out.println("Edit Course");
-				System.out.println("Please enter the Course id number.");
-				String cID = keyboard.nextLine();
+				System.out.println("Editing Course");
+				System.out.println("Please enter the Course id number: ");
+				int cID = toValidInt(keyboard.nextLine());
 				if(isValidCourse(courseList, cID)) {
-//					editCourse(courseList.get(cID));
+					editCourse(keyboard, getCourse(courseList, cID));
 				} else {
 					tryAgain();
 				}
 				break;
 			case 6:
-				System.out.println("Edit Enrollment");
+				System.out.println("Editing Enrollment");
+				System.out.println("Please enter the Enrollment id number: ");
+				int eID = toValidInt(keyboard.nextLine());
+				if(isValidEnrollment(enrollmentList, eID)) {
+					editEnrollment(keyboard, getEnrollment(enrollmentList, eID));
+				} else {
+					tryAgain();
+				}
 				break;
 			case 7:
-				System.out.println("Student List");
-				displayStudents(studentList);				
+				System.out.println("Enter Student id Number or leave blank to display all students: ");
+				text = keyboard.nextLine();
+				if (text.length() == 0) {
+					System.out.println("Student List");
+					displayStudents(studentList);						
+				} else {
+					num = toValidInt(text);
+					if(isValidStudent(studentList, num)) {
+						System.out.println(getStudent(studentList, num));
+					} else {
+						System.out.println("Not a valid student ID number.");
+					}
+				}
 				break;
 			case 8:
-				System.out.println("Course List");
-				displayCourses(courseList);
+				System.out.println("Enter Course id Number or leave blank to display all courses: ");
+				text = keyboard.nextLine();
+				if (text.length() == 0) {
+					System.out.println("Course List");
+					displayCourses(courseList);					
+				} else {
+					num = toValidInt(text);
+					if(isValidCourse(courseList, num)) {
+						System.out.println(getCourse(courseList, num));
+					} else {
+						System.out.println("Not a valid course ID number.");
+					}
+				}
+
 				break;
 			case 9:
-				displayEnrollments(enrollmentList);
+				System.out.println("Enter Enrollment id Number or leave blank to display all enrollments: ");
+				text = keyboard.nextLine();
+				if (text.length() == 0) {
+					System.out.println("Enrollment List");
+					displayEnrollments(enrollmentList);					
+				} else {
+					num = toValidInt(text);
+					if(isValidEnrollment(enrollmentList, num)) {
+						System.out.println(getEnrollment(enrollmentList, num));
+					} else {
+						System.out.println("Not a valid enrollment ID number.");
+					}
+				}
 				break;
 			case 10:
 				do {
@@ -71,12 +147,59 @@ public class midterm {
 					gradeChoice = toValidInt(keyboard.nextLine());
 					switch(gradeChoice) {
 					case 1:
+						System.out.println("Enter Student id Number: ");
+						text = keyboard.nextLine();
+						num = toValidInt(text);
+						if(isValidStudent(studentList, num)) {
+							displayGradesByStudent(enrollmentList, num);
+						} else {
+							System.out.println("Not a valid student ID number.");
+						}
+						
 						break;
 					case 2:
+						System.out.println("Enter Course id Number: ");
+						text = keyboard.nextLine();
+						num = toValidInt(text);
+						if(isValidCourse(courseList, num)) {
+							displayGradesByCourse(enrollmentList, num);
+						} else {
+							System.out.println("Not a valid course ID number.");
+						}
 						break;
 					case 3:
+						System.out.println("Enter Student id Number: ");
+						text = keyboard.nextLine();
+						num = toValidInt(text);
+						System.out.println("Please enter an enrollment year: ");
+						year = toValidInt(keyboard.nextLine());
+						System.out.println("Please enter a sememster: ");
+						sem = keyboard.nextLine();
+						
+						possID = isValidEnrollmentByStudent(enrollmentList, num, year, sem);
+						if(possID != -1) {
+							System.out.println(enrollmentList.get(possID));
+//							TODO: get ValidGrade
+						} else {
+							tryAgain();
+						}	
 						break;
 					case 4:
+						System.out.println("Enter Course id Number: ");
+						text = keyboard.nextLine();
+						num = toValidInt(text);
+						System.out.println("Please enter an enrollment year: ");
+						year = toValidInt(keyboard.nextLine());
+						System.out.println("Please enter a sememster: ");
+						sem = keyboard.nextLine();
+						
+						possID = isValidEnrollmentByCourse(enrollmentList, num, year, sem);
+						if(possID != -1) {
+							System.out.println(enrollmentList.get(possID));
+							
+						} else {
+							tryAgain();
+						}	
 						break;
 					case 0:
 						break;
@@ -84,7 +207,6 @@ public class midterm {
 						tryAgain();
 					}
 				} while(gradeChoice != 0);
-				
 				break;
 			case 0:
 				break;
@@ -99,7 +221,9 @@ public class midterm {
 	}
 	
 	public static void showMainMenu() {
-		System.out.println("Welcome to University Enrollment");
+		System.out.println();
+		System.out.println("MAIN MENU");
+		System.out.println("-----------------------------------");
 		System.out.println("1. Create Student");
 		System.out.println("2. Create Course");
 		System.out.println("3. Create Enrollment");
@@ -115,7 +239,9 @@ public class midterm {
 	}
 	
 	public static void showGradesSubMenu() {
-		System.out.println("Grades Menu");
+		System.out.println();
+		System.out.println("GRADES MENU");
+		System.out.println("-----------------------------------");
 		System.out.println("1. View Grades by Student");
 		System.out.println("2. View Grades by Course");
 		System.out.println("3. Edit Grades by Student");
@@ -146,11 +272,47 @@ public class midterm {
 		return false;
 	}
 	
-	public static boolean isValidCourse (ArrayList<Course> courseList, String courseID) {
+	public static boolean isValidCourse (ArrayList<Course> courseList, int courseID) {
 		for(int i = 0; i < courseList.size(); i++) {
 			if(courseList.get(i).getCourseID() == courseID) {
 				return true;
 			}
+		}
+		return false;
+	}
+	
+	public static boolean isValidEnrollment(ArrayList<Enrollment> enrollList, int enrollID) {
+		for(int i = 0; i < enrollList.size(); i++) {
+			if(enrollList.get(i).getEnrollmentID() == enrollID) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static int isValidEnrollmentByStudent(ArrayList<Enrollment> enrollList, int sID, int year, String semester) {
+		for(int i = 0; i < enrollList.size(); i++) {
+			Enrollment enroll = enrollList.get(i);
+			if(enroll.getStudentID() == sID && enroll.getSemester() == semester && enroll.getYear() == year) {
+				return enroll.getEnrollmentID();
+			}
+		}
+		return -1;
+	}
+	
+	public static int isValidEnrollmentByCourse(ArrayList<Enrollment> enrollList, int cID, int year, String semester) {
+		for(int i = 0; i < enrollList.size(); i++) {
+			Enrollment enroll = enrollList.get(i);
+			if(enroll.getCourseID() == cID && enroll.getSemester() == semester && enroll.getYear() == year) {
+				return enroll.getEnrollmentID();
+			}
+		}
+		return -1;
+	}
+	
+	public static boolean canCreateEnrollment(ArrayList<Student> studentList, ArrayList<Course> courseList) {
+		if(studentList.size() > 0 && courseList.size() > 0) {
+			return true;
 		}
 		return false;
 	}
@@ -167,10 +329,10 @@ public class midterm {
 	}
 	
 	public static Course createCourse(Scanner keyboard) {
-		String id, name, instr, dept;
+		String num, name, instr, dept;
 		
-		System.out.print("Course ID: ");
-		id = keyboard.nextLine();
+		System.out.print("Course Number: ");
+		num = keyboard.nextLine();
 		System.out.print("Course Name: ");
 		name = keyboard.nextLine();
 		System.out.print("Instructor: ");
@@ -178,8 +340,12 @@ public class midterm {
 		System.out.print("Department: ");
 		dept = keyboard.nextLine();
 		
-		return new Course(id, name, instr, dept);
+		return new Course(num, name, instr, dept);
 		
+	}
+	
+	public static Enrollment createEnrollment(int year, String semester, int stid, int coid) {
+		return new Enrollment(year, semester, stid, coid);
 	}
 
 	public static void editStudent(Scanner keyboard, Student stu) {
@@ -188,6 +354,8 @@ public class midterm {
 		System.out.println("Student Information:");
 		System.out.println(stu);
 		do {
+			System.out.println("MENU");
+			System.out.println("-----------------------------------");
 			System.out.println("1. Edit First Name");
 			System.out.println("2. Edit Last Name");
 			System.out.println("0. Done");
@@ -214,9 +382,113 @@ public class midterm {
 		
 	}
 	
-	public static void editCourse(Course cour) {
-		//	TODO: logic for editing Course
+	public static void editCourse(Scanner keyboard, Course cour) {
 		System.out.println("editing course");
+		int choiceEdit;
+		String text;
+		System.out.println("Course Information:");
+		System.out.println(cour);
+		do {
+			System.out.println("MENU");
+			System.out.println("-----------------------------------");
+			System.out.println("1. Edit Course Name");
+			System.out.println("2. Edit Course Instructor");
+			System.out.println("3. Edit Course Department");
+			System.out.println("0. Done");
+			choiceEdit = toValidInt(keyboard.nextLine());
+			
+			switch(choiceEdit) {
+			case 1:
+				System.out.print("Course Name: ");
+				text = keyboard.nextLine();
+				cour.setCourseName(text);
+				break;
+			case 2:
+				System.out.print("Course Instructor: ");
+				text = keyboard.nextLine();
+				cour.setInstructor(text);
+				break;
+			case 3:
+				System.out.print("Course Department: ");
+				text = keyboard.nextLine();
+				cour.setDepartment(text);
+				break;
+			case 0:
+				break;
+			default:
+				tryAgain();
+				
+			}
+		} while(choiceEdit != 0);
+	}
+	
+	public static void editEnrollment(Scanner keyboard, Enrollment enroll) {
+		String text;
+		int choiceEdit;
+		int num;
+		System.out.println("Enrollment Information:");
+		System.out.println(enroll);
+		do {
+			System.out.println("MENU");
+			System.out.println("-----------------------------------");
+			System.out.println("1. Edit Enrollment Year");
+			System.out.println("2. Edit Enrollment Semester");
+			System.out.println("0. Done");
+			choiceEdit = toValidInt(keyboard.nextLine());
+			switch(choiceEdit) {
+			case 1:
+				System.out.println("Enrollment Year: ");
+				num = toValidInt(keyboard.nextLine());
+				if(num > 0) {
+					enroll.setYear(num);
+				} else {
+					System.out.println("Not a valid year");
+				}
+				break;
+			case 2:
+				System.out.println("Enrollment Semester: ");
+				text = keyboard.nextLine();
+				enroll.setSemester(text);
+				break;
+			case 0:
+				break;
+			default:
+				tryAgain();
+			}
+		} while(choiceEdit != 0);
+	}
+	
+	public static Student getStudent(ArrayList<Student> studentList, int studentID) {
+		int index = -1;
+		for(int i = 0; i < studentList.size(); i++) {
+			if(studentList.get(i).getIdNumber() == studentID) {
+				index = i;
+				break;
+			}
+		}
+		return studentList.get(index);
+	}
+	
+	public static Course getCourse(ArrayList<Course> courseList, int courseID) {
+		int index = -1;
+		for(int i = 0; i < courseList.size(); i++) {
+			if(courseList.get(i).getCourseID() == courseID) {
+				index = i;
+				break;
+			}
+		}
+		return courseList.get(index);
+	}
+	
+	public static Enrollment getEnrollment(ArrayList<Enrollment> enrollList, int enrollID) {
+		int index = -1;
+		for(int i = 0; i < enrollList.size(); i++) {
+			if(enrollList.get(i).getEnrollmentID() == enrollID) {
+				index = i;
+				break;
+			}
+		}
+		return enrollList.get(index);
 	}
 
 	public static void displayStudents(ArrayList<Student> studentList) {
@@ -225,7 +497,6 @@ public class midterm {
 			System.out.println(studentList.get(i));
 			System.out.println("-----------------------------------");
 		}
-
 	}
 
 	public static void displayCourses(ArrayList<Course> courseList) {
@@ -247,11 +518,21 @@ public class midterm {
 	}
 	
 	public static void displayGradesByStudent(ArrayList<Enrollment> enrollmentList, int studentID) {
-		
+		System.out.println("-----------------------------------");
+		for(int i = 0; i < enrollmentList.size(); i++) {
+			if(enrollmentList.get(i).getStudentID() == studentID);
+			System.out.println(enrollmentList.get(i));
+			System.out.println("-----------------------------------");
+		}
 	}
 	
-	public static void displayGradesByCourse(ArrayList<Enrollment> enrollmentList, String courseID) {
-		
+	public static void displayGradesByCourse(ArrayList<Enrollment> enrollmentList, int courseID) {
+		System.out.println("-----------------------------------");
+		for(int i = 0; i < enrollmentList.size(); i++) {
+			if(enrollmentList.get(i).getCourseID() == courseID);
+			System.out.println(enrollmentList.get(i));
+			System.out.println("-----------------------------------");
+		}
 	}
 
 }
@@ -306,37 +587,23 @@ class Course {
 	
 	private static int counter = 0;
 	
-	final private int courseNumber;
-	private String courseID;
+	final private int courseID;
+	private String courseNumber;
 	private String courseName;
 	private String instructor;
 	private String department;
 	
 	
-	public Course(String id, String name, String instructor, String dept) {
-		courseNumber = ++counter;
-		setCourseID(id);
+	public Course(String number, String name, String instructor, String dept) {
+		courseID = ++counter;
+		setCourseNumber(number);
 		setCourseName(name);
 		setInstructor(instructor);
 		setDepartment(dept);
 	}
 	
-	public String toString() {
-		return String.format(
-				"Course Number: %s\n"
-				+ "Course ID: %s\n"
-				+ "Course Name: %s\n"
-				+ "Course Instructor: %s\n"
-				+ "Course Department: %s\n",
-				getCourseNumber(),
-				getCourseID(),
-				getCourseName(),
-				getInstructor(),
-				getDepartment());
-	}
-	
-	public int getCourseNumber() {
-		return courseNumber;
+	public int getCourseID() {
+		return courseID;
 	}
 
 	public String getCourseName() {
@@ -363,27 +630,50 @@ class Course {
 		this.department = department;
 	}
 
-	public String getCourseID() {
-		return courseID;
+	public String getCourseNumber() {
+		return courseNumber;
 	}
 
-	public void setCourseID(String courseID) {
-		this.courseID = courseID;
+	public void setCourseNumber(String courseNumber) {
+		this.courseNumber = courseNumber;
 	}
 	
-
-	
+	public String toString() {
+		return String.format(
+				"Course ID: %s\n"
+				+ "Course Number: %s\n"
+				+ "Course Name: %s\n"
+				+ "Course Instructor: %s\n"
+				+ "Course Department: %s\n",
+				getCourseID(),
+				getCourseNumber(),
+				getCourseName(),
+				getInstructor(),
+				getDepartment());
+	}
 }
 
 class Enrollment {
+	private static int counter = 0;
 	
+	final private int enrollmentID;
 	private int year;
 	private String semester;
-	private char grade;
+	private int studentID;
+	private int courseID;
+	private char grade = '*';
 	
-	public Enrollment(int year, String semester) {
+	public Enrollment(int year, String semester, int student, int course) {
+		enrollmentID = ++counter;
+		
 		this.setYear(year);
 		this.setSemester(semester);
+		this.setStudentID(student);
+		this.setCourseID(course);
+	}
+	
+	public int getEnrollmentID() {
+		return enrollmentID;
 	}
 
 	public int getYear() {
@@ -409,7 +699,38 @@ class Enrollment {
 	public void setGrade(char grade) {
 		this.grade = grade;
 	}
+
+	public int getStudentID() {
+		return studentID;
+	}
+
+	public void setStudentID(int studentID) {
+		this.studentID = studentID;
+	}
+
+	public int getCourseID() {
+		return courseID;
+	}
+
+	public void setCourseID(int courseID) {
+		this.courseID = courseID;
+	}
 	
+	public String toString() {
+		return String.format(
+				"Enrollment ID: %s\n"
+				+ "Course ID: %s\n"
+				+ "Student ID: %s\n"
+				+ "Year: %s\n"
+				+ "Semester: %s\n"
+				+ "Grade: %s\n",
+				getEnrollmentID(),
+				getCourseID(),
+				getStudentID(),
+				getYear(),
+				getSemester(),
+				getGrade());
+	}
 	
 }
 
