@@ -9,8 +9,8 @@ public class midterm {
 		ArrayList<Course> courseList = new ArrayList<Course>();
 		ArrayList<Student> studentList = new ArrayList<Student>();
 		ArrayList<Enrollment> enrollmentList = new ArrayList<Enrollment>();
-		int choice, gradeChoice, num, year, possID;
-		String text, sem;
+		int choice, gradeChoice, num, num2, year, possID;
+		String text, text2, sem;
 		
 		System.out.println("Welcome to University Enrollment");
 		do {
@@ -171,32 +171,31 @@ public class midterm {
 						System.out.println("Enter Student id Number: ");
 						text = keyboard.nextLine();
 						num = toValidInt(text);
+						System.out.println("Enter Course id Number: ");
+						text2 = keyboard.nextLine();
+						num2 = toValidInt(text2);
 						System.out.println("Please enter an enrollment year: ");
 						year = toValidInt(keyboard.nextLine());
 						System.out.println("Please enter a sememster: ");
 						sem = keyboard.nextLine();
 						
-						possID = isValidEnrollmentByStudent(enrollmentList, num, year, sem);
+						possID = isValidEnrollmentByStudent(enrollmentList, num2, num, year, sem);
 						if(possID != -1) {
-							System.out.println(enrollmentList.get(possID));
-//							TODO: get ValidGrade
+							Enrollment theEnroll = getEnrollment(enrollmentList, possID);
+							System.out.println(theEnroll);
+							setValidGrade(keyboard, theEnroll);
 						} else {
 							tryAgain();
 						}	
 						break;
 					case 4:
-						System.out.println("Enter Course id Number: ");
+						System.out.println("Enter Enrollment id Number ");
 						text = keyboard.nextLine();
 						num = toValidInt(text);
-						System.out.println("Please enter an enrollment year: ");
-						year = toValidInt(keyboard.nextLine());
-						System.out.println("Please enter a sememster: ");
-						sem = keyboard.nextLine();
-						
-						possID = isValidEnrollmentByCourse(enrollmentList, num, year, sem);
-						if(possID != -1) {
-							System.out.println(enrollmentList.get(possID));
-							
+						if(isValidEnrollment(enrollmentList, num)) {
+							Enrollment theEnroll = getEnrollment(enrollmentList, num);
+							System.out.println(theEnroll);
+							setValidGrade(keyboard, theEnroll);
 						} else {
 							tryAgain();
 						}	
@@ -245,7 +244,7 @@ public class midterm {
 		System.out.println("1. View Grades by Student");
 		System.out.println("2. View Grades by Course");
 		System.out.println("3. Edit Grades by Student");
-		System.out.println("4. Edit Grades by Course");
+		System.out.println("4. Edit Grades by Enrollment");
 		System.out.println("0. -- Exit to Menu --");
 		System.out.println("Please enter a valid choice (1-4, 0 to Exit):");
 	}
@@ -272,6 +271,46 @@ public class midterm {
 		return false;
 	}
 	
+	public static void setValidGrade(Scanner keyboard, Enrollment enroll) {
+		int gradeNum;
+		boolean gradeWasSet; 
+		do {
+			gradeWasSet = true;
+			System.out.println("Please choose a Grade for this enrollment: ");
+			System.out.println("1. A");
+			System.out.println("2. B");
+			System.out.println("3. C");
+			System.out.println("4. D");
+			System.out.println("5. F");
+			System.out.println("0. Cancel");
+			gradeNum = toValidInt(keyboard.nextLine());
+			switch(gradeNum) {
+			case 1:
+				enroll.setGrade('A');
+				break;
+			case 2:
+				enroll.setGrade('B');
+				break;
+			case 3:
+				enroll.setGrade('C');
+				break;
+			case 4:
+				enroll.setGrade('D');
+				break;
+			case 5:
+				enroll.setGrade('F');
+				break;
+			case 0:
+				break;
+			default:
+				gradeWasSet = false;
+				tryAgain();
+			}
+
+		} while(gradeNum != 0 && !gradeWasSet);
+
+	}
+	
 	public static boolean isValidCourse (ArrayList<Course> courseList, int courseID) {
 		for(int i = 0; i < courseList.size(); i++) {
 			if(courseList.get(i).getCourseID() == courseID) {
@@ -290,20 +329,12 @@ public class midterm {
 		return false;
 	}
 	
-	public static int isValidEnrollmentByStudent(ArrayList<Enrollment> enrollList, int sID, int year, String semester) {
+	public static int isValidEnrollmentByStudent(ArrayList<Enrollment> enrollList, int cID, int sID, int year, String semester) {
+		Enrollment enroll;
 		for(int i = 0; i < enrollList.size(); i++) {
-			Enrollment enroll = enrollList.get(i);
-			if(enroll.getStudentID() == sID && enroll.getSemester() == semester && enroll.getYear() == year) {
-				return enroll.getEnrollmentID();
-			}
-		}
-		return -1;
-	}
-	
-	public static int isValidEnrollmentByCourse(ArrayList<Enrollment> enrollList, int cID, int year, String semester) {
-		for(int i = 0; i < enrollList.size(); i++) {
-			Enrollment enroll = enrollList.get(i);
-			if(enroll.getCourseID() == cID && enroll.getSemester() == semester && enroll.getYear() == year) {
+			enroll = enrollList.get(i);
+			
+			if(enroll.getStudentID() == sID && enroll.getCourseID() == cID && enroll.getSemester().equalsIgnoreCase(semester) && enroll.getYear() == year) {
 				return enroll.getEnrollmentID();
 			}
 		}
@@ -520,18 +551,20 @@ public class midterm {
 	public static void displayGradesByStudent(ArrayList<Enrollment> enrollmentList, int studentID) {
 		System.out.println("-----------------------------------");
 		for(int i = 0; i < enrollmentList.size(); i++) {
-			if(enrollmentList.get(i).getStudentID() == studentID);
-			System.out.println(enrollmentList.get(i));
-			System.out.println("-----------------------------------");
+			if(enrollmentList.get(i).getStudentID() == studentID) {
+				System.out.println(enrollmentList.get(i));
+				System.out.println("-----------------------------------");	
+			}
 		}
 	}
 	
 	public static void displayGradesByCourse(ArrayList<Enrollment> enrollmentList, int courseID) {
 		System.out.println("-----------------------------------");
 		for(int i = 0; i < enrollmentList.size(); i++) {
-			if(enrollmentList.get(i).getCourseID() == courseID);
-			System.out.println(enrollmentList.get(i));
-			System.out.println("-----------------------------------");
+			if(enrollmentList.get(i).getCourseID() == courseID) {
+				System.out.println(enrollmentList.get(i));
+				System.out.println("-----------------------------------");
+			}
 		}
 	}
 
