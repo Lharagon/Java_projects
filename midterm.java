@@ -567,7 +567,132 @@ public class midterm {
 			}
 		}
 	}
+	
+//	public static void loadStudents() throws FileNotFoundException {
+//		FileInputStream fstream = new FileInputStream("Students.dat");
+//		DataInputStream inputFile = new DataInputStream(fstream);
+//	}
+//	
+//	public static void loadCourses() {
+//		
+//	}
+//	
+//	public static void loadEnrollments() {
+//		
+//	}
+//	
 
+
+	
+//	public static void writeEnrollments(ArrayList<Enrollment> enrollmentList) throws IOException {
+//
+//		FileOutputStream fstream = new FileOutputStream("Enrollments.dat");
+//		DataOutputStream outputFile = new DataOutputStream(fstream);
+//		
+//		for(Enrollment enrollment: enrollmentList) {
+//			outputFile.writeInt(enrollment.getEnrollmentID());
+//			outputFile.writeInt(enrollment.getCourseID());
+//			outputFile.writeInt(enrollment.getStudentID());
+//			outputFile.writeInt(enrollment.getYear());
+//			outputFile.writeUTF(enrollment.getSemester());
+//			outputFile.writeChar(enrollment.getGrade());
+//		}
+//		
+//		outputFile.close();
+//	}
+
+}
+
+class BinaryFiles {
+	private final int STUDENT_RECORD_SIZE = 84;
+	private final int COURSE_RECORD_SIZE = 164;
+	private final int ENROLL_RECORD_SIZE = 38;
+	private final int MAX_STR_LENGTH = 20;
+	private RandomAccessFile studentFile;
+	private RandomAccessFile courseFile;
+	private RandomAccessFile enrollmentFile;
+	
+	public BinaryFiles() throws FileNotFoundException {
+		studentFile = new RandomAccessFile("Students.dat", "rw");
+		courseFile = new RandomAccessFile("Courses.dat", "rw");
+		enrollmentFile = new RandomAccessFile("Enrollments.dat", "rw");
+	}
+	
+	public long getStartByte(Student student) {
+		return STUDENT_RECORD_SIZE * (student.getIdNumber() - 1);
+	}
+	
+	public long getStartByte(Course course) {
+		return COURSE_RECORD_SIZE * (course.getCourseID() - 1);
+	}
+	
+	public long getStartByte(Enrollment enroll) {
+		return ENROLL_RECORD_SIZE * (enroll.getEnrollmentID() - 1);
+	}
+	
+	public void moveFilePointer(Student student) {
+		
+	}
+	
+//	TODO COMP:ET+ THIS SHIITTT
+	
+	public Student readStudentFromFile() {
+		
+	}
+	
+	public void writeToFile(Student student) throws IOException {
+
+		studentFile.writeInt(student.getIdNumber());
+		writeString(studentFile, student.getFirstName());
+		writeString(studentFile, student.getLastName());
+		
+	}
+	
+	public void writeToFile(Course course) throws IOException {
+
+		courseFile.writeInt(course.getCourseID());
+		writeString(courseFile, course.getCourseNumber());
+		writeString(courseFile, course.getCourseName());
+		writeString(courseFile, course.getInstructor());
+		writeString(courseFile, course.getDepartment());
+		
+	}
+	
+	public void writeToFile(Enrollment enrollment) throws IOException {
+		enrollmentFile.writeInt(enrollment.getEnrollmentID());
+		enrollmentFile.writeInt(enrollment.getCourseID());
+		enrollmentFile.writeInt(enrollment.getStudentID());
+		enrollmentFile.writeInt(enrollment.getYear());
+		writeString(enrollmentFile, enrollment.getSemester());
+		enrollmentFile.writeChar(enrollment.getGrade());
+	}
+	
+	public void writeString(RandomAccessFile theFile, String theString) throws IOException {
+		if (theString.length() > MAX_STR_LENGTH) {
+			for(int i = 0; i < MAX_STR_LENGTH; i++) {
+				theFile.writeChar(theString.charAt(i));
+			}
+		} else {
+			theFile.writeChars(theString);
+			
+			for (int i = 0; i < (MAX_STR_LENGTH - theString.length()); i++)
+				theFile.writeChar(' ');
+		}
+	}
+	
+	public String readAString(RandomAccessFile theFile) throws IOException {
+		
+		char[] charArray = new char[MAX_STR_LENGTH];
+		
+		for(int i = 0; i < MAX_STR_LENGTH; i++) {
+			charArray[i] = theFile.readChar();
+		}
+		
+		String theString = new String(charArray);
+		
+		return theString.trim();
+	}
+	
 }
 
 class Student {
@@ -582,6 +707,13 @@ class Student {
 		this.idNumber = ++counter;
 		setFirstName(first);
 		setLastName(last);
+	}
+	
+	public Student(int id, String first, String last) {
+		++counter;
+		this.idNumber = id;
+		this.firstName = first;
+		this.lastName = last;
 	}
 	
 	public void setFirstName(String first) {
