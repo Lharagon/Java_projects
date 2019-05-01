@@ -4,7 +4,7 @@ import java.io.*;
 
 public class midterm {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		Scanner keyboard = new Scanner(System.in);
 		ArrayList<Course> courseList = new ArrayList<Course>();
 		ArrayList<Student> studentList = new ArrayList<Student>();
@@ -12,6 +12,15 @@ public class midterm {
 		int choice, gradeChoice, num, num2, year, possID;
 		String text, text2, sem;
 		
+//		create BinaryFiles object to handle binary files
+		BinaryFiles binaryFiles = new BinaryFiles();
+		
+//		Load students, courses, and enrollments from files
+		loadStudents(studentList, binaryFiles);
+		loadCourses(courseList, binaryFiles);
+		loadEnrollments(enrollmentList, binaryFiles);
+		
+//		Use switch to show menu
 		System.out.println("Welcome to University Enrollment");
 		do {
 			showMainMenu();
@@ -27,6 +36,7 @@ public class midterm {
 				System.out.println(newStudent);
 				System.out.println("-----------------------------------");
 				studentList.add(newStudent);
+				binaryFiles.writeToFile(newStudent, true); // write new student to studentFile
 				break;
 			case 2:
 				System.out.println("Creating New Course");
@@ -36,6 +46,7 @@ public class midterm {
 				System.out.println(newCourse);
 				System.out.println("-----------------------------------");
 				courseList.add(newCourse);
+				binaryFiles.writeToFile(newCourse, true); // write new course to courseFile
 				break;
 			case 3:
 				System.out.println("Creating New Enrollment");
@@ -49,7 +60,7 @@ public class midterm {
 						System.out.println("Course: \n" + getCourse(courseList, ctid));
 						System.out.println("Please enter an enrollment year: ");
 						year = toValidInt(keyboard.nextLine());
-						System.out.println("Please enter a sememster: ");
+						System.out.println("Please enter a semester: ");
 						sem = keyboard.nextLine();
 						Enrollment newEnrollment = createEnrollment(year, sem, stid, ctid);
 						System.out.println("New Enrollment");
@@ -57,6 +68,7 @@ public class midterm {
 						System.out.println(newEnrollment);
 						System.out.println("-----------------------------------");
 						enrollmentList.add(newEnrollment);
+						binaryFiles.writeToFile(newEnrollment, true); // write new enrollment to enrollmentFile
 					} else {
 						System.out.println("Not a valid student id and/or course id.");
 					}
@@ -70,7 +82,9 @@ public class midterm {
 				System.out.println("Please enter the Student id number: ");
 				int sID = toValidInt(keyboard.nextLine());
 				if(isValidStudent(studentList, sID)) {
-					editStudent(keyboard, getStudent(studentList, sID));
+					Student aStudent = getStudent(studentList, sID);
+					editStudent(keyboard, aStudent);
+					binaryFiles.writeToFile(aStudent, false); // replace previous record with new record
 				} else {
 					tryAgain();
 				}
@@ -80,7 +94,9 @@ public class midterm {
 				System.out.println("Please enter the Course id number: ");
 				int cID = toValidInt(keyboard.nextLine());
 				if(isValidCourse(courseList, cID)) {
-					editCourse(keyboard, getCourse(courseList, cID));
+					Course aCourse = getCourse(courseList, cID);
+					editCourse(keyboard, aCourse);
+					binaryFiles.writeToFile(aCourse, false); // replace previous record with new record
 				} else {
 					tryAgain();
 				}
@@ -90,12 +106,15 @@ public class midterm {
 				System.out.println("Please enter the Enrollment id number: ");
 				int eID = toValidInt(keyboard.nextLine());
 				if(isValidEnrollment(enrollmentList, eID)) {
-					editEnrollment(keyboard, getEnrollment(enrollmentList, eID));
+					Enrollment anEnrollment = getEnrollment(enrollmentList, eID);
+					editEnrollment(keyboard, anEnrollment);
+					binaryFiles.writeToFile(anEnrollment, false); // replace previous record with new record
 				} else {
 					tryAgain();
 				}
 				break;
 			case 7:
+//				Display student(s)
 				System.out.println("Enter Student id Number or leave blank to display all students: ");
 				text = keyboard.nextLine();
 				if (text.length() == 0) {
@@ -110,6 +129,7 @@ public class midterm {
 					}
 				}
 				break;
+//				Display course(s)
 			case 8:
 				System.out.println("Enter Course id Number or leave blank to display all courses: ");
 				text = keyboard.nextLine();
@@ -127,6 +147,7 @@ public class midterm {
 
 				break;
 			case 9:
+//				Display enrollments
 				System.out.println("Enter Enrollment id Number or leave blank to display all enrollments: ");
 				text = keyboard.nextLine();
 				if (text.length() == 0) {
@@ -142,6 +163,7 @@ public class midterm {
 				}
 				break;
 			case 10:
+//				Grade menu
 				do {
 					showGradesSubMenu();
 					gradeChoice = toValidInt(keyboard.nextLine());
@@ -184,6 +206,7 @@ public class midterm {
 							Enrollment theEnroll = getEnrollment(enrollmentList, possID);
 							System.out.println(theEnroll);
 							setValidGrade(keyboard, theEnroll);
+							binaryFiles.writeToFile(theEnroll, false); // replace previous record with new record  
 						} else {
 							tryAgain();
 						}	
@@ -196,6 +219,7 @@ public class midterm {
 							Enrollment theEnroll = getEnrollment(enrollmentList, num);
 							System.out.println(theEnroll);
 							setValidGrade(keyboard, theEnroll);
+							binaryFiles.writeToFile(theEnroll, false);  // replace previous record with new record
 						} else {
 							tryAgain();
 						}	
@@ -208,6 +232,7 @@ public class midterm {
 				} while(gradeChoice != 0);
 				break;
 			case 0:
+				binaryFiles.closeAll();
 				break;
 			default:
 				tryAgain();
@@ -218,7 +243,8 @@ public class midterm {
 		System.out.println("BYE BYE");
 		keyboard.close();
 	}
-	
+
+//	Shows main menu
 	public static void showMainMenu() {
 		System.out.println();
 		System.out.println("MAIN MENU");
@@ -237,6 +263,7 @@ public class midterm {
 		System.out.println("Please enter a valid choice (1-10, 0 to Quit):");
 	}
 	
+//	Shows grade sub menu
 	public static void showGradesSubMenu() {
 		System.out.println();
 		System.out.println("GRADES MENU");
@@ -249,6 +276,7 @@ public class midterm {
 		System.out.println("Please enter a valid choice (1-4, 0 to Exit):");
 	}
 	
+//	returns an int either by parsing or -1 if parsing was not possible
 	public static int toValidInt(String aString) {
 		try {
 			return Integer.parseInt(aString);
@@ -257,10 +285,12 @@ public class midterm {
 		}
 	}
 	
+//	print error message
 	public static void tryAgain() {
 		System.out.println("Invalid choice. Please try again.");
 	}
 	
+//	Checks if studentID is valid
 	public static boolean isValidStudent (ArrayList<Student> studentList, int studentID) {
 		
 		for(int i = 0; i < studentList.size(); i++) {
@@ -271,6 +301,7 @@ public class midterm {
 		return false;
 	}
 	
+//	Menu to choose a valid grade for an enrollment
 	public static void setValidGrade(Scanner keyboard, Enrollment enroll) {
 		int gradeNum;
 		boolean gradeWasSet; 
@@ -311,6 +342,7 @@ public class midterm {
 
 	}
 	
+//	checks if courseID is valid
 	public static boolean isValidCourse (ArrayList<Course> courseList, int courseID) {
 		for(int i = 0; i < courseList.size(); i++) {
 			if(courseList.get(i).getCourseID() == courseID) {
@@ -320,6 +352,7 @@ public class midterm {
 		return false;
 	}
 	
+//	checks if enrollmentID is valid
 	public static boolean isValidEnrollment(ArrayList<Enrollment> enrollList, int enrollID) {
 		for(int i = 0; i < enrollList.size(); i++) {
 			if(enrollList.get(i).getEnrollmentID() == enrollID) {
@@ -329,6 +362,7 @@ public class midterm {
 		return false;
 	}
 	
+//	checks if enrollment with user input exists
 	public static int isValidEnrollmentByStudent(ArrayList<Enrollment> enrollList, int cID, int sID, int year, String semester) {
 		Enrollment enroll;
 		for(int i = 0; i < enrollList.size(); i++) {
@@ -341,6 +375,7 @@ public class midterm {
 		return -1;
 	}
 	
+//	checks whether there are students and courses
 	public static boolean canCreateEnrollment(ArrayList<Student> studentList, ArrayList<Course> courseList) {
 		if(studentList.size() > 0 && courseList.size() > 0) {
 			return true;
@@ -348,6 +383,7 @@ public class midterm {
 		return false;
 	}
 	
+//	creates a new student
 	public static Student createStudent(Scanner keyboard) {
 		String first, last;
 		
@@ -359,6 +395,7 @@ public class midterm {
 		return new Student(first, last);
 	}
 	
+//	creates a new course
 	public static Course createCourse(Scanner keyboard) {
 		String num, name, instr, dept;
 		
@@ -375,6 +412,7 @@ public class midterm {
 		
 	}
 	
+//	creates a new enrollment
 	public static Enrollment createEnrollment(int year, String semester, int stid, int coid) {
 		return new Enrollment(year, semester, stid, coid);
 	}
@@ -409,7 +447,6 @@ public class midterm {
 				tryAgain();
 			}
 		} while (choiceEdit != 0);
-		
 		
 	}
 	
@@ -489,6 +526,7 @@ public class midterm {
 		} while(choiceEdit != 0);
 	}
 	
+//	Gets student with studentID
 	public static Student getStudent(ArrayList<Student> studentList, int studentID) {
 		int index = -1;
 		for(int i = 0; i < studentList.size(); i++) {
@@ -500,6 +538,7 @@ public class midterm {
 		return studentList.get(index);
 	}
 	
+//	returns course with courseID
 	public static Course getCourse(ArrayList<Course> courseList, int courseID) {
 		int index = -1;
 		for(int i = 0; i < courseList.size(); i++) {
@@ -511,6 +550,7 @@ public class midterm {
 		return courseList.get(index);
 	}
 	
+//	return enrollment with enrollmentID
 	public static Enrollment getEnrollment(ArrayList<Enrollment> enrollList, int enrollID) {
 		int index = -1;
 		for(int i = 0; i < enrollList.size(); i++) {
@@ -524,16 +564,16 @@ public class midterm {
 
 	public static void displayStudents(ArrayList<Student> studentList) {
 		System.out.println("-----------------------------------");
-		for(int i = 0; i < studentList.size(); i++) {
-			System.out.println(studentList.get(i));
+		for(Student student: studentList) {
+			System.out.println(student);
 			System.out.println("-----------------------------------");
 		}
 	}
 
 	public static void displayCourses(ArrayList<Course> courseList) {
 		System.out.println("-----------------------------------");
-		for(int i = 0; i < courseList.size(); i++) {
-			System.out.println(courseList.get(i));
+		for(Course course: courseList) {
+			System.out.println(course);
 			System.out.println("-----------------------------------");
 		}
 
@@ -541,8 +581,8 @@ public class midterm {
 
 	public static void displayEnrollments(ArrayList<Enrollment> enrollmentList) {
 		System.out.println("-----------------------------------");
-		for(int i = 0; i < enrollmentList.size(); i++) {
-			System.out.println(enrollmentList.get(i));
+		for(Enrollment enroll: enrollmentList) {
+			System.out.println(enroll);
 			System.out.println("-----------------------------------");
 		}
 
@@ -550,9 +590,9 @@ public class midterm {
 	
 	public static void displayGradesByStudent(ArrayList<Enrollment> enrollmentList, int studentID) {
 		System.out.println("-----------------------------------");
-		for(int i = 0; i < enrollmentList.size(); i++) {
-			if(enrollmentList.get(i).getStudentID() == studentID) {
-				System.out.println(enrollmentList.get(i));
+		for(Enrollment enroll: enrollmentList) {
+			if(enroll.getStudentID() == studentID) {
+				System.out.println(enroll);
 				System.out.println("-----------------------------------");	
 			}
 		}
@@ -560,53 +600,51 @@ public class midterm {
 	
 	public static void displayGradesByCourse(ArrayList<Enrollment> enrollmentList, int courseID) {
 		System.out.println("-----------------------------------");
-		for(int i = 0; i < enrollmentList.size(); i++) {
-			if(enrollmentList.get(i).getCourseID() == courseID) {
-				System.out.println(enrollmentList.get(i));
+		for(Enrollment enroll: enrollmentList) {
+			if(enroll.getCourseID() == courseID) {
+				System.out.println(enroll);
 				System.out.println("-----------------------------------");
 			}
 		}
 	}
 	
-//	public static void loadStudents() throws FileNotFoundException {
-//		FileInputStream fstream = new FileInputStream("Students.dat");
-//		DataInputStream inputFile = new DataInputStream(fstream);
-//	}
-//	
-//	public static void loadCourses() {
-//		
-//	}
-//	
-//	public static void loadEnrollments() {
-//		
-//	}
-//	
-
-
+//	Reads student records from binary studentsFile
+	public static void loadStudents(ArrayList<Student> studentList, BinaryFiles theFiles) throws IOException {
+		long number = theFiles.getNumberOfStudents();
+		for(int i = 0; i < number; i++) {
+			Student aStudent = theFiles.readStudentFromFile();
+			studentList.add(aStudent);
+		}
+	}
 	
-//	public static void writeEnrollments(ArrayList<Enrollment> enrollmentList) throws IOException {
-//
-//		FileOutputStream fstream = new FileOutputStream("Enrollments.dat");
-//		DataOutputStream outputFile = new DataOutputStream(fstream);
-//		
-//		for(Enrollment enrollment: enrollmentList) {
-//			outputFile.writeInt(enrollment.getEnrollmentID());
-//			outputFile.writeInt(enrollment.getCourseID());
-//			outputFile.writeInt(enrollment.getStudentID());
-//			outputFile.writeInt(enrollment.getYear());
-//			outputFile.writeUTF(enrollment.getSemester());
-//			outputFile.writeChar(enrollment.getGrade());
-//		}
-//		
-//		outputFile.close();
-//	}
+//	Reads enrollment records from binary enrollmentFile
+	private static void loadEnrollments(ArrayList<Enrollment> enrollmentList, BinaryFiles theFiles) throws IOException {
+		long number = theFiles.getNumberOfEnrollments();
+		for(int i = 0; i < number; i++) {
+			Enrollment anEnrollment = theFiles.readEnrollmentFromFile();
+			enrollmentList.add(anEnrollment);
+		}
+		
+	}
 
+//	Reads course records from binary courseFil
+	private static void loadCourses(ArrayList<Course> courseList, BinaryFiles theFiles) throws IOException {
+		long number = theFiles.getNumberOfCourses();
+		
+		for(int i = 0; i < number; i++) {
+			Course aCourse = theFiles.readCourseFromFile();
+			courseList.add(aCourse);
+		}
+	}
+	
+	
 }
 
+//Class handles binary files used in main
 class BinaryFiles {
 	private final int STUDENT_RECORD_SIZE = 84;
 	private final int COURSE_RECORD_SIZE = 164;
-	private final int ENROLL_RECORD_SIZE = 38;
+	private final int ENROLL_RECORD_SIZE = 58;
 	private final int MAX_STR_LENGTH = 20;
 	private RandomAccessFile studentFile;
 	private RandomAccessFile courseFile;
@@ -618,6 +656,7 @@ class BinaryFiles {
 		enrollmentFile = new RandomAccessFile("Enrollments.dat", "rw");
 	}
 	
+//	Overloaded mehtods for finding start location of record
 	public long getStartByte(Student student) {
 		return STUDENT_RECORD_SIZE * (student.getIdNumber() - 1);
 	}
@@ -630,25 +669,66 @@ class BinaryFiles {
 		return ENROLL_RECORD_SIZE * (enroll.getEnrollmentID() - 1);
 	}
 	
-	public void moveFilePointer(Student student) {
+//	Methods for reading Students, Courses, Enrollment records from file
+	public Student readStudentFromFile() throws IOException {
+		int idNum;
+		String first, last;
 		
+		idNum = studentFile.readInt();
+		first = readAString(studentFile);
+		last = readAString(studentFile);
+		
+		return new Student(idNum, first, last);
 	}
 	
-//	TODO COMP:ET+ THIS SHIITTT
-	
-	public Student readStudentFromFile() {
+	public Course readCourseFromFile() throws IOException {
+		String num, name, inst, dept;
+		int idNum;
+		idNum = courseFile.readInt();
+		num = readAString(courseFile);
+		name = readAString(courseFile);
+		inst = readAString(courseFile);
+		dept = readAString(courseFile);
 		
+		return new Course(idNum, num, name, inst, dept);
 	}
 	
-	public void writeToFile(Student student) throws IOException {
-
+	public Enrollment readEnrollmentFromFile() throws IOException {
+		int Eid, Cid, Sid, year;
+		String sem;
+		char grade;
+		
+		Eid = enrollmentFile.readInt();
+		Cid = enrollmentFile.readInt();
+		Sid = enrollmentFile.readInt();
+		year = enrollmentFile.readInt();
+		sem = readAString(enrollmentFile);
+		grade = enrollmentFile.readChar();
+		
+		return new Enrollment(Eid, year, sem, Sid, Cid, grade);
+	}
+	
+//	Methods to write Student, Course, and Enrollment records to files
+	public void writeToFile(Student student, boolean adding) throws IOException {
+		if(adding) {
+			studentFile.seek(studentFile.length());
+		} else {
+			studentFile.seek(getStartByte(student));
+		}
+		
 		studentFile.writeInt(student.getIdNumber());
 		writeString(studentFile, student.getFirstName());
 		writeString(studentFile, student.getLastName());
 		
 	}
 	
-	public void writeToFile(Course course) throws IOException {
+//	Overloaded methods for writing Courses, Students, and Enrollments
+	public void writeToFile(Course course, boolean adding) throws IOException {
+		if(adding) {
+			courseFile.seek(courseFile.length());
+		} else {
+			courseFile.seek(getStartByte(course));
+		}
 
 		courseFile.writeInt(course.getCourseID());
 		writeString(courseFile, course.getCourseNumber());
@@ -658,7 +738,13 @@ class BinaryFiles {
 		
 	}
 	
-	public void writeToFile(Enrollment enrollment) throws IOException {
+	public void writeToFile(Enrollment enrollment, boolean adding) throws IOException {
+		if(adding) {
+			enrollmentFile.seek(enrollmentFile.length());
+		} else {
+			enrollmentFile.seek(getStartByte(enrollment));
+		}
+		
 		enrollmentFile.writeInt(enrollment.getEnrollmentID());
 		enrollmentFile.writeInt(enrollment.getCourseID());
 		enrollmentFile.writeInt(enrollment.getStudentID());
@@ -667,6 +753,7 @@ class BinaryFiles {
 		enrollmentFile.writeChar(enrollment.getGrade());
 	}
 	
+//	General method for writing consistently sized strings
 	public void writeString(RandomAccessFile theFile, String theString) throws IOException {
 		if (theString.length() > MAX_STR_LENGTH) {
 			for(int i = 0; i < MAX_STR_LENGTH; i++) {
@@ -680,6 +767,7 @@ class BinaryFiles {
 		}
 	}
 	
+//	General method for reading consistently sized strings
 	public String readAString(RandomAccessFile theFile) throws IOException {
 		
 		char[] charArray = new char[MAX_STR_LENGTH];
@@ -693,8 +781,28 @@ class BinaryFiles {
 		return theString.trim();
 	}
 	
+	public long getNumberOfStudents() throws IOException {
+		return studentFile.length() / STUDENT_RECORD_SIZE;
+	}
+	
+	public long getNumberOfCourses() throws IOException {
+		return courseFile.length() / COURSE_RECORD_SIZE;
+	}
+	
+	public long getNumberOfEnrollments() throws IOException {
+		return enrollmentFile.length() / ENROLL_RECORD_SIZE;
+	}
+	
+	public void closeAll() throws IOException {
+		studentFile.close();
+		courseFile.close();
+		enrollmentFile.close();
+		
+	}
+	
 }
 
+//Student class
 class Student {
 	
 	private static int counter = 0;
@@ -703,12 +811,14 @@ class Student {
 	private String firstName;
 	private String lastName;
 	
+//	Used when creating new Student
 	public Student(String first, String last) {
 		this.idNumber = ++counter;
 		setFirstName(first);
 		setLastName(last);
 	}
 	
+//	Used when loading students
 	public Student(int id, String first, String last) {
 		++counter;
 		this.idNumber = id;
@@ -758,9 +868,19 @@ class Course {
 	private String instructor;
 	private String department;
 	
-	
+//	Used when creating new course
 	public Course(String number, String name, String instructor, String dept) {
 		courseID = ++counter;
+		setCourseNumber(number);
+		setCourseName(name);
+		setInstructor(instructor);
+		setDepartment(dept);
+	}
+	
+//	Used when loading courses
+	public Course(int id, String number, String name, String instructor, String dept) {
+		++counter;
+		courseID = id;
 		setCourseNumber(number);
 		setCourseName(name);
 		setInstructor(instructor);
@@ -828,6 +948,7 @@ class Enrollment {
 	private int courseID;
 	private char grade = '*';
 	
+//	Used when creating new enrollment
 	public Enrollment(int year, String semester, int student, int course) {
 		enrollmentID = ++counter;
 		
@@ -835,6 +956,18 @@ class Enrollment {
 		this.setSemester(semester);
 		this.setStudentID(student);
 		this.setCourseID(course);
+	}
+	
+//	Used when loading enrollments
+	public Enrollment(int id, int year, String semester, int student, int course, char grade) {
+		++counter;
+		
+		this.enrollmentID = id;
+		this.setYear(year);
+		this.setSemester(semester);
+		this.setStudentID(student);
+		this.setCourseID(course);
+		this.setGrade(grade);
 	}
 	
 	public int getEnrollmentID() {
