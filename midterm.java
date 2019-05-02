@@ -385,14 +385,20 @@ public class midterm {
 	
 //	creates a new student
 	public static Student createStudent(Scanner keyboard) {
-		String first, last;
+		String first, last, address, city, state;
 		
 		System.out.print("First Name: ");
 		first = keyboard.nextLine();
 		System.out.print("Last Name: ");
 		last = keyboard.nextLine();
+		System.out.print("Address: ");
+		address = keyboard.nextLine();
+		System.out.print("City: ");
+		city = keyboard.nextLine();
+		System.out.print("State: ");
+		state = keyboard.nextLine();
 		
-		return new Student(first, last);
+		return new Student(first, last, address, city, state);
 	}
 	
 //	creates a new course
@@ -427,6 +433,9 @@ public class midterm {
 			System.out.println("-----------------------------------");
 			System.out.println("1. Edit First Name");
 			System.out.println("2. Edit Last Name");
+			System.out.println("3. Edit Address");
+			System.out.println("4. Edit City");
+			System.out.println("5. Edit State");
 			System.out.println("0. Done");
 			choiceEdit = toValidInt(keyboard.nextLine());
 			
@@ -440,6 +449,21 @@ public class midterm {
 				System.out.print("Last name: ");
 				name = keyboard.nextLine();
 				stu.setLastName(name);
+				break;
+			case 3:
+				System.out.print("Address: ");
+				name = keyboard.nextLine();
+				stu.setAddress(name);
+				break;
+			case 4:
+				System.out.print("City: ");
+				name = keyboard.nextLine();
+				stu.setCity(name);
+				break;
+			case 5:
+				System.out.print("State: ");
+				name = keyboard.nextLine();
+				stu.setState(name);
 				break;
 			case 0:
 				break;
@@ -642,7 +666,7 @@ public class midterm {
 
 //Class handles binary files used in main
 class BinaryFiles {
-	private final int STUDENT_RECORD_SIZE = 84;
+	private final int STUDENT_RECORD_SIZE = 204;
 	private final int COURSE_RECORD_SIZE = 164;
 	private final int ENROLL_RECORD_SIZE = 58;
 	private final int MAX_STR_LENGTH = 20;
@@ -672,13 +696,16 @@ class BinaryFiles {
 //	Methods for reading Students, Courses, Enrollment records from file
 	public Student readStudentFromFile() throws IOException {
 		int idNum;
-		String first, last;
+		String first, last, address, city, state;
 		
 		idNum = studentFile.readInt();
 		first = readAString(studentFile);
 		last = readAString(studentFile);
+		address = readAString(studentFile);
+		city = readAString(studentFile);
+		state = readAString(studentFile);
 		
-		return new Student(idNum, first, last);
+		return new Student(idNum, first, last, address, city, state);
 	}
 	
 	public Course readCourseFromFile() throws IOException {
@@ -719,6 +746,9 @@ class BinaryFiles {
 		studentFile.writeInt(student.getIdNumber());
 		writeString(studentFile, student.getFirstName());
 		writeString(studentFile, student.getLastName());
+		writeString(studentFile, student.getAddress());
+		writeString(studentFile, student.getCity());
+		writeString(studentFile, student.getState());
 		
 	}
 	
@@ -810,20 +840,29 @@ class Student {
 	final private int idNumber;
 	private String firstName;
 	private String lastName;
+	private String address;
+	private String city;
+	private String state;
 	
 //	Used when creating new Student
-	public Student(String first, String last) {
+	public Student(String first, String last, String address, String city, String state) {
 		this.idNumber = ++counter;
 		setFirstName(first);
 		setLastName(last);
+		setAddress(address);
+		setCity(city);
+		setState(state);
 	}
 	
 //	Used when loading students
-	public Student(int id, String first, String last) {
+	public Student(int id, String first, String last, String address, String city, String state) {
 		++counter;
 		this.idNumber = id;
 		this.firstName = first;
 		this.lastName = last;
+		this.address = address;
+		this.city = city;
+		this.state = state;
 	}
 	
 	public void setFirstName(String first) {
@@ -846,16 +885,47 @@ class Student {
 		return lastName;
 	}
 	
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+	
 	public String toString() {
 		return String.format(
 				
 				"ID Number: %s\n"
 				+ "First Name: %s\n"
-				+ "Last Name: %s\n",
+				+ "Last Name: %s\n"
+				+ "Address: %s\n"
+				+ "City: %s\n"
+				+ "State: %s\n",
 				getIdNumber(), 
 				getFirstName(), 
-				getLastName()); 
+				getLastName(),
+				getAddress(),
+				getCity(),
+				getState()); 
 	}
+
 }
 
 class Course {
