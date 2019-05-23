@@ -14,6 +14,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
+import javafx.collections.ObservableList;
+import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import javafx.event.EventHandler;
@@ -187,6 +189,32 @@ public class JavaFinal extends Application{
 	}
 	
 	
+	
+//	TODO: FINISH THIS EDIT of enrollment
+	
+	
+	
+	
+	
+//	HANDLES EDITING AN ENROLLMENT
+	class EditEnrollmentHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			VBox view = addEditCourseView(courseList, true, masterID);
+			borderPane.setCenter(view);
+		}
+	}
+	
+//	HANDLES ADDING AN ENROLLMENT
+	class AddEnrollmentHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			VBox view = getStudentForEnrollment();
+			borderPane.setCenter(view);
+		}
+	}
+	
+	
 //	Returns View according to menu item selected by user
 	public VBox getAddDisplay(String option) {
 		Label message = null;
@@ -201,11 +229,9 @@ public class JavaFinal extends Application{
 			vBox.setAlignment(Pos.CENTER);
 			return vBox;
 		} else {
-			message = new Label("You clicked add ENROLLMENT");
+			vBox = getStudentForEnrollment();
+			vBox.setAlignment(Pos.CENTER);
 		}
-
-		vBox = new VBox(20, message);
-		vBox.setAlignment(Pos.CENTER);
 		
 		return vBox;
 	}
@@ -239,6 +265,12 @@ public class JavaFinal extends Application{
 			editBtn.setOnAction(new EditCourseHandler());
 			if(afterAdd) {
 				addBtn.setOnAction(new AddCourseHandler());
+			}
+			break;
+		case "Enrollment":
+			editBtn.setOnAction(new EditEnrollment());
+			if(afterAdd) {
+				addBtn.setOnAction(new AddEnrollmentHandler());
 			}
 			break;
 		default:
@@ -309,6 +341,129 @@ public class JavaFinal extends Application{
 		vBox.setAlignment(Pos.CENTER);
 		
 		return vBox;
+	}
+	
+//	VIEW FOR SEARCH STUDENT FOR ENROLLMENT
+	public VBox getStudentForEnrollment() {
+		Label errorMessage = new Label("Not a valid Student ID.");
+		
+		Label message = new Label("Please enter the Student ID: ");
+		TextField idTx = new TextField();
+		HBox firstHb = new HBox(message, idTx);
+		
+		Button searchButton = new Button("Student Search");
+		HBox buttonHb = new HBox(searchButton);
+		
+		
+		searchButton.setOnAction(event -> {
+			int num = toValidInt(idTx.getText());
+			Label item = null;
+			VBox vBox, studentVBox, enrollVBox;
+			HBox itemHb;
+			
+			if(isValidStudent(studentList, num)) {
+				
+				Label studentStr = new Label(getStudent(studentList, num).toString());
+				studentVBox  = new VBox(studentStr);
+				studentVBox.setAlignment(Pos.CENTER);
+				enrollVBox = addEditEnrollmentView(enrollmentList, courseList, false, -1, num);
+				enrollVBox.setAlignment(Pos.CENTER);
+				itemHb = new HBox(studentVBox, enrollVBox);
+			} else {
+				item = new Label("Not a valid option, what happened?");
+				vBox = new VBox(item);
+				itemHb = new HBox(vBox);
+			}
+			
+
+			itemHb.setAlignment(Pos.CENTER);
+			borderPane.setCenter(itemHb);
+			
+		});
+
+		VBox vBox = new VBox(20, firstHb, buttonHb);
+		vBox.setAlignment(Pos.CENTER);
+		
+		return vBox;
+	}
+	
+//	VIEW FOR ADDING/EDITING ENROLLMENT
+	public VBox addEditEnrollmentView(ArrayList<Enrollment> enrollmentList, ArrayList<Course> cList, boolean editing, int Eid, int Sid) {
+		Label courseLb, yearLb, semesterLb;
+		ComboBox<String> yearCb, courseCb, semesterCb;
+		HBox courseBx, yearBx, semesterBx, buttonBx;
+		VBox view;
+		Button submitButton, cancelButton;
+		
+		courseLb = new Label("Course: ");
+		courseCb = new ComboBox<>();
+		courseCb.getItems().addAll(getListOfCourses(cList));
+		courseBx = new HBox(courseLb, courseCb);
+		
+		yearLb = new Label("Year: ");
+		yearCb = new ComboBox<>();
+		yearCb.getItems().addAll("2019", "2020", "2021", "2022");
+		yearBx = new HBox(yearLb, yearCb);
+		
+		semesterLb = new Label("Semester: ");
+		semesterCb = new ComboBox<>();
+		semesterCb.getItems().addAll("Spring", "Summer", "Fall", "Winter");
+		semesterBx = new HBox(semesterLb, semesterCb);
+		
+		if(editing) {
+			Enrollment existingEnrollment = getEnrollment(enrollmentList, Eid);
+			Course aCourse = getCourse(cList, existingEnrollment.getCourseID());
+			String idNumberStr = String.format("%s    %s", 
+											   aCourse.getCourseID(),
+											   aCourse.getCourseNumber());
+			
+			courseCb.setValue(idNumberStr);
+			yearCb.setValue(Integer.toString(existingEnrollment.getYear()));
+			submitButton = new Button("Save Changes");
+		} else {
+			submitButton = new Button("Create Enrollment");
+		}
+		
+		submitButton.setOnAction(event -> {
+			String semesterIn;
+			int courseIn, yearIn, studentIn;
+			Enrollment theEnrollment;
+			
+			semesterIn = semesterCb.getValue();
+			courseIn = getCourseIdFromString(courseCb.getValue());
+			yearIn = Integer.parseInt(yearCb.getValue());
+			studentIn = Sid;
+			
+			if(editing) {
+				theEnrollment = getEnrollment(enrollmentList, Eid);
+				theEnrollment.setCourseID(courseIn);
+				theEnrollment.setStudentID(studentIn);
+				theEnrollment.setSemester(semesterIn);
+				theEnrollment.setYear(yearIn);
+			} else {			
+				theEnrollment = new Enrollment(yearIn, semesterIn, studentIn, courseIn);
+				enrollmentList.add(theEnrollment);
+			}
+
+			try {
+				binaryFiles.writeToFile(theEnrollment, !editing);
+				System.out.println("In the try binaryFile should have saved.");
+				VBox newVBox = getDetailView(theEnrollment.toString(), "Enrollment", !editing, theEnrollment.getEnrollmentID());
+				borderPane.setCenter(new HBox(newVBox));
+			} catch (IOException e) {
+				System.out.println("Exception: " + e);
+				e.printStackTrace();
+			}
+			
+		});
+		cancelButton = new Button("Cancel");
+		cancelButton.setOnAction(new CancelHandler());
+		buttonBx = new HBox(submitButton, cancelButton);
+		
+		
+		view = new VBox(20, courseBx, yearBx, semesterBx, buttonBx);
+		
+		return view;
 	}
 	
 //	VIEW FOR ADDING/EDITING A STUDENT
@@ -491,6 +646,24 @@ public class JavaFinal extends Application{
 		} catch (Exception e) {
 			return -1;
 		}
+	}
+	
+	public static ObservableList<String> getListOfCourses(ArrayList<Course> cList) {
+		String[] courseIdName = new String[cList.size()];
+		
+		int i = 0;
+		for(Course course: cList) {
+			courseIdName[i] =  String.format("%s    %s",
+											 course.getCourseID(),
+											 course.getCourseNumber());
+		}
+		
+		return FXCollections.observableArrayList(courseIdName);
+		
+	}
+	
+	public static int getCourseIdFromString(String option) {
+		return Integer.parseInt(option.split("    ")[0]);
 	}
 	
 	public static void editStudent(Student aStudent, String fname, String lname, String address, String city, String state) {
