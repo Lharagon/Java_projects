@@ -117,7 +117,9 @@ public class JavaFinal extends Application{
 		gradeItem = new MenuItem("Manage Grades");
 		gradeMenu.getItems().add(gradeItem);
 		
-		gradeItem.setOnAction(new CancelHandler());
+//		gradeItem.setOnAction(event -> {
+//			borderPane.setCenter(getGradeSearchDisplay());
+//		});
 		
 //		Create Report Menu
 		reportMenu = new Menu("Report");
@@ -187,21 +189,24 @@ public class JavaFinal extends Application{
 			borderPane.setCenter(view);
 		}
 	}
-	
-	
-	
-//	TODO: FINISH THIS EDIT of enrollment
-	
-	
-	
-	
+
 	
 //	HANDLES EDITING AN ENROLLMENT
 	class EditEnrollmentHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
-			VBox view = addEditCourseView(courseList, true, masterID);
-			borderPane.setCenter(view);
+			Enrollment theEnrollment = getEnrollment(enrollmentList, masterID);
+			Label theStudentLb = new Label(getStudent(studentList, theEnrollment.getStudentID()).toString());
+			VBox studentVBox = new VBox(theStudentLb);
+			studentVBox.setAlignment(Pos.CENTER);
+			VBox enrollVBox = addEditEnrollmentView(enrollmentList, courseList, true, masterID, -1);
+			enrollVBox.setAlignment(Pos.CENTER);
+			HBox itemHb = new HBox(studentVBox, enrollVBox);
+			
+			itemHb.setAlignment(Pos.CENTER);
+			borderPane.setCenter(itemHb);
+			
+
 		}
 	}
 	
@@ -268,7 +273,7 @@ public class JavaFinal extends Application{
 			}
 			break;
 		case "Enrollment":
-			editBtn.setOnAction(new EditEnrollment());
+			editBtn.setOnAction(new EditEnrollmentHandler());
 			if(afterAdd) {
 				addBtn.setOnAction(new AddEnrollmentHandler());
 			}
@@ -413,12 +418,14 @@ public class JavaFinal extends Application{
 		if(editing) {
 			Enrollment existingEnrollment = getEnrollment(enrollmentList, Eid);
 			Course aCourse = getCourse(cList, existingEnrollment.getCourseID());
+			
 			String idNumberStr = String.format("%s    %s", 
 											   aCourse.getCourseID(),
 											   aCourse.getCourseNumber());
-			
 			courseCb.setValue(idNumberStr);
 			yearCb.setValue(Integer.toString(existingEnrollment.getYear()));
+			semesterCb.setValue(existingEnrollment.getSemester());
+			
 			submitButton = new Button("Save Changes");
 		} else {
 			submitButton = new Button("Create Enrollment");
@@ -437,7 +444,6 @@ public class JavaFinal extends Application{
 			if(editing) {
 				theEnrollment = getEnrollment(enrollmentList, Eid);
 				theEnrollment.setCourseID(courseIn);
-				theEnrollment.setStudentID(studentIn);
 				theEnrollment.setSemester(semesterIn);
 				theEnrollment.setYear(yearIn);
 			} else {			
