@@ -14,10 +14,10 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListView;
 import javafx.collections.ObservableList;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
-import javafx.geometry.Insets;
 import javafx.event.EventHandler;
 import javafx.event.ActionEvent;
 
@@ -69,7 +69,7 @@ public class JavaFinal extends Application{
 		loadCourses(courseList, binaryFiles);
 		loadEnrollments(enrollmentList, binaryFiles);
 		
-//		Create menu barS
+//		Create menu bars
 		menuBar = new MenuBar();
 		
 //		Create Add Menu
@@ -126,6 +126,10 @@ public class JavaFinal extends Application{
 		reportItem = new MenuItem("Report");
 		reportMenu.getItems().add(reportItem);
 		
+		reportItem.setOnAction(event -> {
+			borderPane.setCenter(reportSearchView(courseList));
+		});
+		
 //		Add menus to menu bar
 		menuBar.getMenus().addAll(addMenu, searchMenu, gradeMenu, reportMenu);
 		
@@ -134,16 +138,17 @@ public class JavaFinal extends Application{
 		borderPane.setTop(menuBar);
 		
 //		Create Scene
-		scene = new Scene(borderPane, 800, 500);
+		scene = new Scene(borderPane, 600, 500);
 		
-//		myLabel = new Label("Click the button to see a message");
-//		Button myButton = new Button("Click Me");
+		scene.getStylesheets().add("styles.css");
 		
 		primaryStage.setScene(scene);
 		
 		primaryStage.setTitle("Student Management System");
 		
 		primaryStage.show();
+
+		
 	}
 	
 	////////////////////////
@@ -202,17 +207,27 @@ public class JavaFinal extends Application{
 		@Override
 		public void handle(ActionEvent event) {
 			Enrollment theEnrollment = getEnrollment(enrollmentList, masterID);
-			Label theStudentLb = new Label(getStudent(studentList, theEnrollment.getStudentID()).toString());
-			VBox studentVBox = new VBox(theStudentLb);
+			HBox theStudentHb = studentDetails(getStudent(studentList, theEnrollment.getStudentID()));
+			
+			VBox studentVBox = new VBox(theStudentHb);
 			studentVBox.setAlignment(Pos.CENTER);
+			
 			VBox enrollVBox = addEditEnrollmentView(enrollmentList, courseList, true, masterID, -1);
 			enrollVBox.setAlignment(Pos.CENTER);
-			HBox itemHb = new HBox(studentVBox, enrollVBox);
+			HBox itemHb = new HBox(30, studentVBox, enrollVBox);
 			
 			itemHb.setAlignment(Pos.CENTER);
 			borderPane.setCenter(itemHb);
 			
 
+		}
+	}
+	
+//	HANDLES GET GRADE ENROLLMENT
+	class SearchForGradeHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			borderPane.setCenter(getGradeSearchDisplay());
 		}
 	}
 	
@@ -234,7 +249,6 @@ public class JavaFinal extends Application{
 	
 //	Returns View according to menu item selected by user
 	public VBox getAddDisplay(String option) {
-		Label message = null;
 		VBox vBox;
 		
 		if(option.contentEquals("Student")) {
@@ -256,12 +270,19 @@ public class JavaFinal extends Application{
 	public HBox studentDetails(Student aStudent) {
 
 		Label idLb = new Label("Student ID:");
+		idLb.getStyleClass().add("detail-label");
 		Label firstLb = new Label("First Name:");
+		firstLb.getStyleClass().add("detail-label");
 		Label lastLb = new Label("Last Name:");
+		lastLb.getStyleClass().add("detail-label");
 		Label addressLb = new Label("Address:");
+		addressLb.getStyleClass().add("detail-label");
 		Label cityLb = new Label("City:");
+		cityLb.getStyleClass().add("detail-label");
 		Label stateLb = new Label("State:");
-		VBox labelVx = new VBox(idLb, firstLb, lastLb, addressLb, cityLb, stateLb);
+		stateLb.getStyleClass().add("detail-label");
+		VBox labelVx = new VBox(15, idLb, firstLb, lastLb, addressLb, cityLb, stateLb);
+		
 		
 		Label idVal = new Label(Integer.toString(aStudent.getIdNumber()));
 		Label firstVal = new Label(aStudent.getFirstName());
@@ -269,37 +290,50 @@ public class JavaFinal extends Application{
 		Label addressVal = new Label(aStudent.getAddress());
 		Label cityVal = new Label(aStudent.getCity());
 		Label stateVal = new Label(aStudent.getState());
-		VBox ValueVx = new VBox(idVal, firstVal, lastVal, addressVal, cityVal, stateVal);
+		stateVal.getStyleClass().add("detail-value");
+		VBox ValueVx = new VBox(15, idVal, firstVal, lastVal, addressVal, cityVal, stateVal);
+		ValueVx.getStyleClass().add("detail-value-VBox");
 		
-		return new HBox(labelVx, ValueVx);
+		
+		return new HBox(15, labelVx, ValueVx);
 	}
 	
 	public HBox courseDetails(Course aCourse) {
 		Label courseIdLb = new Label("Course ID:");
+		courseIdLb.getStyleClass().add("detail-label");
 		Label courseNumLb = new Label("Course Number:");
+		courseNumLb.getStyleClass().add("detail-label");
 		Label courseNameLb = new Label("Course Name:");
+		courseNameLb.getStyleClass().add("detail-label");
 		Label courseInstLb = new Label("Course Instructor:");
+		courseInstLb.getStyleClass().add("detail-label");
 		Label courseDeptLb = new Label("Course Department:");
-		VBox labelVx = new VBox(courseIdLb, courseNumLb, courseNameLb, courseInstLb, courseDeptLb);
+		courseDeptLb.getStyleClass().add("detail-label");
+		VBox labelVx = new VBox(15, courseIdLb, courseNumLb, courseNameLb, courseInstLb, courseDeptLb);
 
 		Label courseIdVal = new Label(Integer.toString(aCourse.getCourseID()));
 		Label courseNumVal = new Label(aCourse.getCourseNumber());
 		Label courseNameVal = new Label(aCourse.getCourseName());
 		Label courseInstVal = new Label(aCourse.getInstructor());
 		Label courseDeptVal = new Label(aCourse.getDepartment());
-		VBox valueVx = new VBox(courseIdVal, courseNumVal, courseNameVal, courseInstVal, courseDeptVal);
+		VBox valueVx = new VBox(15, courseIdVal, courseNumVal, courseNameVal, courseInstVal, courseDeptVal);
 		
-		return new HBox(labelVx, valueVx);
+		return new HBox(15, labelVx, valueVx);
 	}
 	
 	public HBox enrollmentDetails(Enrollment anEnrollment, boolean withGrade) {
 		VBox labelVx, valueVx;
 		
 		Label enrollIdLb = new Label("Enrollment ID:");
+		enrollIdLb.getStyleClass().add("detail-label");
 		Label courseIdLb = new Label("Course ID:");
+		courseIdLb.getStyleClass().add("detail-label");
 		Label studentIdLb = new Label("Student ID:");
+		studentIdLb.getStyleClass().add("detail-label");
 		Label enrollYearLb = new Label("Year:");
+		enrollYearLb.getStyleClass().add("detail-label");
 		Label enrollSemLb = new Label("Semester:");
+		enrollSemLb.getStyleClass().add("detail-label");
 
 		Label enrollIdVal = new Label(Integer.toString(anEnrollment.getEnrollmentID()));
 		Label courseIdVal = new Label(Integer.toString(anEnrollment.getCourseID()));
@@ -310,30 +344,202 @@ public class JavaFinal extends Application{
 		if(withGrade) {
 			Label enrollGradeLb = new Label("Grade:");
 			Label enrollGradeVal = new Label(Character.toString(anEnrollment.getGrade()));
-			labelVx = new VBox(enrollIdLb, courseIdLb, studentIdLb, enrollYearLb, enrollSemLb, enrollGradeLb);
-			valueVx = new VBox(enrollIdVal, courseIdVal, studentIdVal, enrollYearVal, enrollSemVal, enrollGradeVal);
+			labelVx = new VBox(15, enrollIdLb, courseIdLb, studentIdLb, enrollYearLb, enrollSemLb, enrollGradeLb);
+			valueVx = new VBox(15, enrollIdVal, courseIdVal, studentIdVal, enrollYearVal, enrollSemVal, enrollGradeVal);
 		} else {
-			labelVx = new VBox(enrollIdLb, courseIdLb, studentIdLb, enrollYearLb, enrollSemLb);
-			valueVx = new VBox(enrollIdVal, courseIdVal, studentIdVal, enrollYearVal, enrollSemVal);
+			labelVx = new VBox(15, enrollIdLb, courseIdLb, studentIdLb, enrollYearLb, enrollSemLb);
+			valueVx = new VBox(15, enrollIdVal, courseIdVal, studentIdVal, enrollYearVal, enrollSemVal);
 		}
 		
-		return new HBox(labelVx, valueVx);
+		return new HBox(15, labelVx, valueVx);
+	}
+	
+	public VBox reportSearchView(ArrayList<Course> cList) {
+		
+		Label errorMessage = new Label("");
+		errorMessage.getStyleClass().add("error-label");
+		
+		Label courseIdLb = new Label("Course:");
+		Label yearLb = new Label("Year:");
+		
+		ComboBox<String> courseCb = new ComboBox<>();
+		courseCb.getItems().addAll(getListOfCourses(cList));
+		
+		ComboBox<String> yearCb = new ComboBox<>();
+		yearCb.getItems().addAll("2019", "2020", "2021", "2022");
+		
+		Button searchBtn = new Button("Search");
+		
+		VBox labelVb = new VBox(20, courseIdLb, yearLb);
+		VBox valueVb = new VBox(15, courseCb, yearCb);
+		
+		searchBtn.setOnAction(event -> {
+			String cValue = courseCb.getValue();
+			String yValue = yearCb.getValue();
+			System.out.println("this is c: " + cValue + " and y " + yValue);
+			String[] checkArray = {cValue, yValue};
+			
+			if(everythingIsValid(checkArray)) {
+				
+				int courseIn = getCourseIdFromString(cValue);
+				int yearIn = toValidInt(yValue);
+				ListView<Enrollment> matchList = new ListView<>();
+				matchList.getItems().addAll(matchingEnrollments(enrollmentList, courseIn, yearIn));
+				Label reportTitle = new Label(String.format("Report For Course %s Year %s (*: grade unsigned)", courseCb.getValue(), yearIn));
+				reportTitle.setAlignment(Pos.CENTER);
+				Button againBtn = new Button("Search Again");
+				againBtn.setAlignment(Pos.CENTER);
+				
+				againBtn.setOnAction(event2 -> {
+					borderPane.setCenter(reportSearchView(cList));
+				});
+				
+				VBox theVbox = new VBox(10, reportTitle, matchList, againBtn);
+				theVbox.setAlignment(Pos.CENTER);
+				
+				borderPane.setCenter(theVbox);
+			} else {
+				errorMessage.setText("Please fill out all fields");
+			}
+			
+		});
+		
+		HBox formHb = new HBox(15, labelVb, valueVb);
+		formHb.setAlignment(Pos.CENTER);
+		
+		HBox btnHb = new HBox(searchBtn);
+		
+		VBox theV = new VBox(15, errorMessage, formHb, searchBtn, btnHb);
+		theV.setAlignment(Pos.CENTER);
+		
+		return theV;
+		
+	}
+	
+	public VBox getSetGradeView(Enrollment enroll) {
+		Label title = new Label("Set Enrollment Grade");
+		title.getStyleClass().add("title-label");
+		HBox enrollmentBox = enrollmentDetails(enroll, true);
+		enrollmentBox.setAlignment(Pos.CENTER);
+		Label gradeLb = new Label("Set New Grade: ");
+		ComboBox<Character> gradeCb = new ComboBox<>();
+		gradeCb.getItems().addAll('A', 'B', 'C', 'D', 'F');
+		if(enroll.getGrade() != '*') {
+			gradeCb.setValue(enroll.getGrade());
+		} else {
+			gradeCb.setValue('F');
+		}
+		
+		HBox gradeBx = new HBox(25, gradeLb, gradeCb);
+		gradeBx.setAlignment(Pos.CENTER);
+		
+		Button saveBtn = new Button("Save Grade");
+		Button cancelBtn = new Button("Cancel");
+		Button searchBtn = new Button("Search Again");
+		
+		searchBtn.setOnAction(new SearchForGradeHandler());
+		
+		cancelBtn.setOnAction(new CancelHandler());
+		
+		saveBtn.setOnAction(event -> {
+			enroll.setGrade(gradeCb.getValue());
+			
+			try {
+				binaryFiles.writeToFile(enroll, false);
+				System.out.println("In the try binaryFile should have saved.");
+				HBox newHBox = enrollmentDetails(enroll, true);
+				newHBox.setAlignment(Pos.CENTER);
+				VBox aVBox = new VBox(15, newHBox, searchBtn);
+				aVBox.setAlignment(Pos.CENTER);
+				borderPane.setCenter(aVBox);
+			} catch (IOException e) {
+				System.out.println("Exception: " + e);
+				e.printStackTrace();
+			}
+		});
+		HBox btnHb = new HBox(15, saveBtn, cancelBtn);
+		btnHb.setAlignment(Pos.CENTER);
+		VBox resultVb = new VBox(15, title, enrollmentBox, gradeBx, btnHb);
+		resultVb.setAlignment(Pos.CENTER);
+		return resultVb;
+		
+	}
+	
+	public VBox getGradeView(ObservableList<Enrollment> results) {
+		Label title = new Label("Enrollments Matching Criteria");
+		title.getStyleClass().add("title-label");
+		Label warning = new Label("No Matches Found");
+		warning.getStyleClass().add("error-label");
+		Button setGradeBtn = new Button("Manage Grade");
+		Button searchBtn = new Button("Search Again");
+		ListView<Enrollment> matches = new ListView<>();
+		VBox enrollVb;
+		
+		searchBtn.setOnAction(new SearchForGradeHandler());
+		
+		setGradeBtn.setOnAction(event -> {
+			if(matches.getSelectionModel().getSelectedIndex() != -1) {
+				Enrollment anEnrollment = matches.getSelectionModel().getSelectedItem();
+				borderPane.setCenter(getSetGradeView(anEnrollment));
+			} else {
+				System.out.println("Nothing is Selected.");
+			}
+
+		});
+		
+		matches.getItems().addAll(results);
+		
+		HBox titleHb = new HBox(title);
+		titleHb.setAlignment(Pos.CENTER);
+		HBox warningHb = new HBox(warning);
+		warningHb.setAlignment(Pos.CENTER);
+		HBox matchesHb = new HBox(matches);
+		matchesHb.setAlignment(Pos.CENTER);
+		HBox btnHb;
+
+		if(results.size() == 0) {
+			btnHb = new HBox(searchBtn);
+			enrollVb = new VBox(
+					10,
+					titleHb, 
+					warningHb, 
+					matchesHb,
+					btnHb
+					);
+		} else {
+			btnHb = new HBox(15, setGradeBtn, searchBtn);
+			enrollVb = new VBox(
+					10,
+					titleHb,
+					matchesHb,
+					btnHb
+					);
+		}
+		
+		btnHb.setAlignment(Pos.CENTER);
+		enrollVb.setAlignment(Pos.CENTER);
+		
+		return enrollVb;
 	}
 	
 	public VBox getDetailView(HBox item, String type, boolean afterAdd, int id) {
 //		set master id for future actions
 		masterID = id;
 		
+		Label titleLb = new Label(type + " DETAILS");
+		titleLb.getStyleClass().add("title-label");
 		Button editBtn = new Button("Edit");
 		Button addBtn = null;
 		HBox buttonHb;
 		
 		if(afterAdd) {
 			addBtn = new Button("Add new " + type);
-			buttonHb = new HBox(addBtn, editBtn);
+			buttonHb = new HBox(15, addBtn, editBtn);
 		} else {
-			buttonHb = new HBox(editBtn);
+			buttonHb = new HBox(15, editBtn);
 		}
+		
+		buttonHb.setAlignment(Pos.CENTER);
 		
 
 		switch(type)
@@ -360,40 +566,38 @@ public class JavaFinal extends Application{
 			System.out.print("Not a valid option, what happened?");
 		}
 		
+		VBox view = new VBox(15, titleLb, item, buttonHb);
+		view.setAlignment(Pos.CENTER);
 		
-		
-		return new VBox(item, buttonHb);
+		return view;
 		
 	}
 	
 //	SEARCH FOR AN ENROLLMENT FOR GRADE MANAGEMENT
 	public VBox getGradeSearchDisplay() {
-		Label errorMessage = new Label("Not a valid Enrollment");
 		
-		Label studentLb, yearLb, semesterLb, courseLb;
+		Label studentLb, yearLb, semesterLb;
 		ComboBox<String> yearCb, semesterCb;
-		TextField studentTx, courseTx;
-		HBox studentBx, courseBx, yearBx, semesterBx, buttonBx;
+		TextField studentTx;
+		HBox formBx, buttonBx;
 		VBox view;
 		Button submitButton, cancelButton;
 		
 		studentLb = new Label("Enter Student ID: ");
 		studentTx = new TextField();
-		studentBx = new HBox(studentLb, studentTx);
-		
-		courseLb = new Label("Enter Course ID: ");
-		courseTx = new TextField();
-		courseBx = new HBox(courseLb, courseTx);
 		
 		yearLb = new Label("Year: ");
 		yearCb = new ComboBox<>();
 		yearCb.getItems().addAll("2019", "2020", "2021", "2022");
-		yearBx = new HBox(yearLb, yearCb);
 		
 		semesterLb = new Label("Semester: ");
 		semesterCb = new ComboBox<>();
 		semesterCb.getItems().addAll("Spring", "Summer", "Fall", "Winter");
-		semesterBx = new HBox(semesterLb, semesterCb);
+		
+		VBox labelVx = new VBox(23, studentLb, yearLb, semesterLb);
+		VBox valueVx = new VBox(15, studentTx, yearCb, semesterCb);
+		formBx = new HBox(15, labelVx, valueVx);
+		formBx.setAlignment(Pos.CENTER);
 		
 		submitButton = new Button("Search");
 		cancelButton = new Button("Cancel");
@@ -401,40 +605,39 @@ public class JavaFinal extends Application{
 		cancelButton.setOnAction(new CancelHandler());
 		submitButton.setOnAction(event -> {
 			int studentId = toValidInt(studentTx.getText());
-			int courseId = toValidInt(courseTx.getText());
 			int yr = toValidInt(yearCb.getValue());
 			String sem = semesterCb.getValue();
 			
-			int EnrollmentID = indexOfMatchingEnrollmentWith(enrollmentList, studentId, courseId, yr, sem);
-			if(EnrollmentID == -1) {
-				borderPane.setCenter(new Label("WRONG!"));
-			} else {
-				VBox enrollVb = getDetailView(enrollmentDetails(getEnrollment(enrollmentList, EnrollmentID), true), "Enrollment", false, EnrollmentID);
-				borderPane.setCenter(enrollVb);
-			}
+			VBox enrollVb = getGradeView(matchingEnrollments(enrollmentList, studentId, yr, sem));
+			borderPane.setCenter(enrollVb);
+
 		});
-		buttonBx = new HBox(submitButton, cancelButton);
+		buttonBx = new HBox(15, submitButton, cancelButton);
+		buttonBx.setAlignment(Pos.CENTER);
 		
-		view = new VBox(studentBx, courseBx, yearBx, semesterBx, buttonBx);
+		view = new VBox(15, formBx, buttonBx);
+		view.setAlignment(Pos.CENTER);
 		return view;
 	}
 	
 //	SEARCH BY STUDENT, COURSE, ENROLLMENT BY ID
 	public VBox getSearchDisplay(String option) {
-		Label errorMessage = new Label("Not a valid " + option + " ID.");
+		Label errorMessage = new Label("");
+		errorMessage.getStyleClass().add("error-label");
 		
 		Label message = new Label("Please enter the " + option + " ID: ");
 		TextField idTx = new TextField();
 		HBox firstHb = new HBox(message, idTx);
+		firstHb.setAlignment(Pos.CENTER);
 		
 		Button searchButton = new Button(option + " Search");
 		HBox buttonHb = new HBox(searchButton);
+		buttonHb.setAlignment(Pos.CENTER);
 		
 		
 		searchButton.setOnAction(event -> {
 			int num = toValidInt(idTx.getText());
 			boolean wasValid = false;
-			Label item = null;
 			VBox vBox = null;
 			HBox itemHb;
 			
@@ -466,17 +669,16 @@ public class JavaFinal extends Application{
 			}
 			
 			if(!wasValid) {
-				item = new Label("Not a valid option, what happened?");
-				vBox = new VBox(item);
+				errorMessage.setText("Not a valid " + option + " ID.");
+			} else {
+				itemHb = new HBox(vBox);
+				itemHb.setAlignment(Pos.CENTER);
+				borderPane.setCenter(itemHb);
 			}
-			
-			itemHb = new HBox(vBox);
-			itemHb.setAlignment(Pos.CENTER);
-			borderPane.setCenter(itemHb);
 			
 		});
 
-		VBox vBox = new VBox(20, firstHb, buttonHb);
+		VBox vBox = new VBox(20, errorMessage, firstHb, buttonHb);
 		vBox.setAlignment(Pos.CENTER);
 		
 		return vBox;
@@ -484,43 +686,43 @@ public class JavaFinal extends Application{
 	
 //	VIEW FOR SEARCH STUDENT FOR ENROLLMENT
 	public VBox getStudentForEnrollment() {
-		Label errorMessage = new Label("Not a valid Student ID.");
+		Label errorMessage = new Label("");
+		errorMessage.getStyleClass().add("error-label");
 		
 		Label message = new Label("Please enter the Student ID: ");
 		TextField idTx = new TextField();
-		HBox firstHb = new HBox(message, idTx);
+		HBox firstHb = new HBox(15, message, idTx);
+		firstHb.setAlignment(Pos.CENTER);
 		
 		Button searchButton = new Button("Student Search");
 		HBox buttonHb = new HBox(searchButton);
+		buttonHb.setAlignment(Pos.CENTER);
 		
 		
 		searchButton.setOnAction(event -> {
 			int num = toValidInt(idTx.getText());
-			Label item = null;
-			VBox vBox, studentVBox, enrollVBox;
+			VBox studentVBox, enrollVBox;
 			HBox itemHb;
 			
 			if(isValidStudent(studentList, num)) {
 				
-				Label studentStr = new Label(getStudent(studentList, num).toString());
-				studentVBox  = new VBox(studentStr);
+				HBox studentHbox = studentDetails(getStudent(studentList, num));
+				studentHbox.setAlignment(Pos.CENTER);
+				studentVBox  = new VBox(studentHbox);
 				studentVBox.setAlignment(Pos.CENTER);
 				enrollVBox = addEditEnrollmentView(enrollmentList, courseList, false, -1, num);
 				enrollVBox.setAlignment(Pos.CENTER);
-				itemHb = new HBox(studentVBox, enrollVBox);
+				itemHb = new HBox(30, studentVBox, enrollVBox);
+				
+				itemHb.setAlignment(Pos.CENTER);
+				borderPane.setCenter(itemHb);
 			} else {
-				item = new Label("Not a valid option, what happened?");
-				vBox = new VBox(item);
-				itemHb = new HBox(vBox);
+				errorMessage.setText("Not a valid Student ID.");
 			}
-			
-
-			itemHb.setAlignment(Pos.CENTER);
-			borderPane.setCenter(itemHb);
 			
 		});
 
-		VBox vBox = new VBox(20, firstHb, buttonHb);
+		VBox vBox = new VBox(20, errorMessage, firstHb, buttonHb);
 		vBox.setAlignment(Pos.CENTER);
 		
 		return vBox;
@@ -528,26 +730,31 @@ public class JavaFinal extends Application{
 	
 //	VIEW FOR ADDING/EDITING ENROLLMENT
 	public VBox addEditEnrollmentView(ArrayList<Enrollment> enrollmentList, ArrayList<Course> cList, boolean editing, int Eid, int Sid) {
-		Label courseLb, yearLb, semesterLb;
+		Label errorMessage, titleLb, courseLb, yearLb, semesterLb;
 		ComboBox<String> yearCb, courseCb, semesterCb;
-		HBox courseBx, yearBx, semesterBx, buttonBx;
+		HBox formBx, buttonBx;
 		VBox view;
 		Button submitButton, cancelButton;
+		
+		errorMessage = new Label("");
+		errorMessage.getStyleClass().add("error-label");
 		
 		courseLb = new Label("Course: ");
 		courseCb = new ComboBox<>();
 		courseCb.getItems().addAll(getListOfCourses(cList));
-		courseBx = new HBox(courseLb, courseCb);
 		
 		yearLb = new Label("Year: ");
 		yearCb = new ComboBox<>();
 		yearCb.getItems().addAll("2019", "2020", "2021", "2022");
-		yearBx = new HBox(yearLb, yearCb);
 		
 		semesterLb = new Label("Semester: ");
 		semesterCb = new ComboBox<>();
 		semesterCb.getItems().addAll("Spring", "Summer", "Fall", "Winter");
-		semesterBx = new HBox(semesterLb, semesterCb);
+		
+		VBox labelVx = new VBox(23, courseLb, yearLb, semesterLb);
+		VBox valueVx = new VBox(15, courseCb, yearCb, semesterCb);
+		formBx = new HBox(15, labelVx, valueVx);
+		formBx.setAlignment(Pos.CENTER);
 		
 		if(editing) {
 			Enrollment existingEnrollment = getEnrollment(enrollmentList, Eid);
@@ -561,78 +768,97 @@ public class JavaFinal extends Application{
 			semesterCb.setValue(existingEnrollment.getSemester());
 			
 			submitButton = new Button("Save Changes");
+			titleLb = new Label("EDIT AN ENROLLMENT");
 		} else {
 			submitButton = new Button("Create Enrollment");
+			titleLb = new Label("CREATE AN ENROLLMENT");
 		}
+		
+		titleLb.getStyleClass().add("title-label");
 		
 		submitButton.setOnAction(event -> {
 			String semesterIn;
 			int courseIn, yearIn, studentIn;
 			Enrollment theEnrollment;
-			
-			semesterIn = semesterCb.getValue();
-			courseIn = getCourseIdFromString(courseCb.getValue());
-			yearIn = Integer.parseInt(yearCb.getValue());
-			studentIn = Sid;
-			
-			if(editing) {
-				theEnrollment = getEnrollment(enrollmentList, Eid);
-				theEnrollment.setCourseID(courseIn);
-				theEnrollment.setSemester(semesterIn);
-				theEnrollment.setYear(yearIn);
-			} else {			
-				theEnrollment = new Enrollment(yearIn, semesterIn, studentIn, courseIn);
-				enrollmentList.add(theEnrollment);
-			}
 
-			try {
-				binaryFiles.writeToFile(theEnrollment, !editing);
-				System.out.println("In the try binaryFile should have saved.");
-				VBox newVBox = getDetailView(enrollmentDetails(theEnrollment, true), "Enrollment", !editing, theEnrollment.getEnrollmentID());
-				borderPane.setCenter(new HBox(newVBox));
-			} catch (IOException e) {
-				System.out.println("Exception: " + e);
-				e.printStackTrace();
+			String[] checkArray = {semesterCb.getValue(), courseCb.getValue(), yearCb.getValue()};
+
+			if(everythingIsValid(checkArray)) {
+				
+				semesterIn = semesterCb.getValue();
+				courseIn = getCourseIdFromString(courseCb.getValue());
+				yearIn = Integer.parseInt(yearCb.getValue());
+				studentIn = Sid;
+			
+				if(editing) {
+					theEnrollment = getEnrollment(enrollmentList, Eid);
+					theEnrollment.setCourseID(courseIn);
+					theEnrollment.setSemester(semesterIn);
+					theEnrollment.setYear(yearIn);
+				} else {			
+					theEnrollment = new Enrollment(yearIn, semesterIn, studentIn, courseIn);
+					enrollmentList.add(theEnrollment);
+				}
+	
+				try {
+					binaryFiles.writeToFile(theEnrollment, !editing);
+					System.out.println("In the try binaryFile should have saved.");
+					VBox newVBox = getDetailView(enrollmentDetails(theEnrollment, true), "Enrollment", !editing, theEnrollment.getEnrollmentID());
+					newVBox.setAlignment(Pos.CENTER);
+					HBox anHBox = new HBox(newVBox);
+					anHBox.setAlignment(Pos.CENTER);
+					borderPane.setCenter(anHBox);
+				} catch (IOException e) {
+					System.out.println("Exception: " + e);
+					e.printStackTrace();
+				}
+			} else {
+				errorMessage.setText("Please fill out all fields");
 			}
 			
 		});
 		cancelButton = new Button("Cancel");
 		cancelButton.setOnAction(new CancelHandler());
-		buttonBx = new HBox(submitButton, cancelButton);
+		buttonBx = new HBox(15, submitButton, cancelButton);
 		
 		
-		view = new VBox(20, courseBx, yearBx, semesterBx, buttonBx);
+		view = new VBox(20, errorMessage, titleLb, formBx, buttonBx);
+		view.setAlignment(Pos.CENTER);
 		
 		return view;
 	}
 	
 //	VIEW FOR ADDING/EDITING A STUDENT
 	public VBox addEditStudentView(ArrayList<Student> studentList, boolean editing, int Sid) {
-		Label firstLb, lastLb, addressLb, cityLb, stateLb;
+		Label errorMessage, titleLb, firstLb, lastLb, addressLb, cityLb, stateLb;
 		TextField firstTx, lastTx, addressTx, cityTx, stateTx;
-		HBox firstBx, lastBx, addressBx, cityBx, stateBx, buttonBx;
+		HBox buttonBx, titleBx, formBx;
 		VBox view;
 		Button submitButton, cancelButton;
 		
+		errorMessage = new Label("");
+		errorMessage.getStyleClass().add("error-label");
+		
 		firstLb = new Label("First Name: ");
 		firstTx = new TextField();
-		firstBx = new HBox(firstLb, firstTx);
 		
 		lastLb = new Label("Last Name: ");
 		lastTx = new TextField();
-		lastBx = new HBox(lastLb, lastTx);
 
 		addressLb = new Label("Address: ");
 		addressTx = new TextField();
-		addressBx = new HBox(addressLb, addressTx);
 		
 		cityLb = new Label("City: ");
 		cityTx = new TextField();
-		cityBx = new HBox(cityLb, cityTx);
 		
 		stateLb = new Label("State: ");
 		stateTx = new TextField();
-		stateBx = new HBox(stateLb, stateTx);
+
+		
+		VBox labelVx = new VBox(23, firstLb, lastLb, addressLb, cityLb, stateLb);
+		VBox valueVx = new VBox(15, firstTx, lastTx, addressTx, cityTx, stateTx);
+		formBx = new HBox(15, labelVx, valueVx);
+		formBx.setAlignment(Pos.CENTER);
 		
 		if(editing) {
 			Student existingStudent = getStudent(studentList, Sid);
@@ -642,9 +868,13 @@ public class JavaFinal extends Application{
 			cityTx.setText(existingStudent.getCity());
 			stateTx.setText(existingStudent.getState());
 			submitButton = new Button("Save Changes");
+			titleLb = new Label("EDIT A STUDENT");
 		} else {
 			submitButton = new Button("Create Student");
+			titleLb = new Label("ADD A NEW STUDENT");
 		}
+		
+		titleLb.getStyleClass().add("title-label");
 		
 		submitButton.setOnAction(event -> {
 			String firstIn, lastIn, addressIn, cityIn, stateIn;
@@ -655,37 +885,50 @@ public class JavaFinal extends Application{
 			addressIn = addressTx.getText();
 			cityIn = cityTx.getText();
 			stateIn = stateTx.getText();
+			String[] checkArray = {firstIn, lastIn, addressIn, cityIn, stateIn};
 			
-			if(editing) {
-				theStudent = getStudent(studentList, Sid);
-				theStudent.setFirstName(firstIn);
-				theStudent.setLastName(lastIn);
-				theStudent.setAddress(addressIn);
-				theStudent.setCity(cityIn);
-				theStudent.setState(stateIn);
-			} else {			
-				theStudent = new Student(firstIn, lastIn, addressIn, cityIn, stateIn);
-				studentList.add(theStudent);
-			}
-			
-			try {
-				binaryFiles.writeToFile(theStudent, !editing);
-				System.out.println("In the try binaryFile should have saved.");
-				VBox newVBox = getDetailView(studentDetails(theStudent), "Student", !editing, theStudent.getIdNumber());
-				borderPane.setCenter(new HBox(newVBox));
-			} catch (IOException e) {
-				System.out.println("Exception: " + e);
-				e.printStackTrace();
+			if(everythingIsValid(checkArray)) {
+				
+				if(editing) {
+					theStudent = getStudent(studentList, Sid);
+					theStudent.setFirstName(firstIn);
+					theStudent.setLastName(lastIn);
+					theStudent.setAddress(addressIn);
+					theStudent.setCity(cityIn);
+					theStudent.setState(stateIn);
+				} else {			
+					theStudent = new Student(firstIn, lastIn, addressIn, cityIn, stateIn);
+					studentList.add(theStudent);
+				}
+				
+				try {
+					binaryFiles.writeToFile(theStudent, !editing);
+					System.out.println("In the try binaryFile should have saved.");
+					VBox newVBox = getDetailView(studentDetails(theStudent), "Student", !editing, theStudent.getIdNumber());
+					newVBox.setAlignment(Pos.CENTER);
+					HBox anHBox = new HBox(newVBox);
+					anHBox.setAlignment(Pos.CENTER);
+					borderPane.setCenter(anHBox);
+				} catch (IOException e) {
+					System.out.println("Exception: " + e);
+					e.printStackTrace();
+				}
+			} else {
+				errorMessage.setText("Please fill out all fields");
 			}
 			
 		});
+		
+		titleBx = new HBox(titleLb);
+		titleBx.setAlignment(Pos.CENTER);
+		
 		cancelButton = new Button("Cancel");
 		cancelButton.setOnAction(new CancelHandler());
-		buttonBx = new HBox(submitButton, cancelButton);
+		buttonBx = new HBox(15, submitButton, cancelButton);
+		buttonBx.setAlignment(Pos.CENTER);
 		
-		
-		view = new VBox(20, firstBx, lastBx, addressBx, cityBx, stateBx, buttonBx);
-		
+		view = new VBox(15, errorMessage, titleBx, formBx, buttonBx);
+		view.setAlignment(Pos.CENTER);
 		return view;
 		
 	}
@@ -693,30 +936,34 @@ public class JavaFinal extends Application{
 //	VIEW FOR ADDING/EDITING A COURSE
 	public VBox addEditCourseView(ArrayList<Course> courseList, boolean editing, int Sid) {
 		
-		Label courseNumberLb, courseNameLb, instructorLb, departmentLb;
+		Label errorMessage, titleLb, courseNumberLb, courseNameLb, instructorLb, departmentLb;
 		TextField courseNumberTx, courseNameTx;
 		ComboBox<String> instructorCb, departmentCb;
-		HBox courseNumberBx, courseNameBx, instuctorBx, departmentBx, buttonBx;
+		HBox formBx, titleBx, buttonBx;
 		VBox view;
 		Button submitButton, cancelButton;
 		
+		errorMessage = new Label("");
+		errorMessage.getStyleClass().add("error-label");
+		
 		courseNumberLb = new Label("Course Number: ");
 		courseNumberTx = new TextField();
-		courseNumberBx = new HBox(courseNumberLb, courseNumberTx);
 		
 		courseNameLb = new Label("Course Name: ");
 		courseNameTx = new TextField();
-		courseNameBx = new HBox(courseNameLb, courseNameTx);
 
 		instructorLb = new Label("Instructor: ");
 		instructorCb = new ComboBox<>();
 		instructorCb.getItems().addAll("Professor 1", "Professor 2", "Professor 3", "Me");
-		instuctorBx = new HBox(instructorLb, instructorCb);
 		
 		departmentLb = new Label("Department: ");
 		departmentCb = new ComboBox<>();
 		departmentCb.getItems().addAll("English", "Computer Science", "Biology", "Math", "Chemistry");
-		departmentBx = new HBox(departmentLb, departmentCb);
+		
+		VBox labelVx = new VBox(23, courseNumberLb, courseNameLb, instructorLb, departmentLb);
+		VBox valueVx = new VBox(15, courseNumberTx, courseNameTx, instructorCb, departmentCb);
+		formBx = new HBox(15, labelVx, valueVx);
+		formBx.setAlignment(Pos.CENTER);
 		
 		if(editing) {
 			Course aCourse = getCourse(courseList, Sid);
@@ -725,9 +972,13 @@ public class JavaFinal extends Application{
 			instructorCb.setValue(aCourse.getInstructor());
 			departmentCb.setValue(aCourse.getDepartment());
 			submitButton = new Button("Save Changes");
+			titleLb = new Label("EDIT A COURSE");
 		} else {
 			submitButton = new Button("Create Course");
+			titleLb = new Label("ADD A NEW COURSE");
 		}
+		
+		titleLb.getStyleClass().add("title-label");
 		
 		submitButton.setOnAction(event -> {
 			String courseNumberIn, courseNameIn, instructorIn, departmentIn;
@@ -737,35 +988,47 @@ public class JavaFinal extends Application{
 			courseNameIn = courseNameTx.getText();
 			instructorIn = instructorCb.getValue();
 			departmentIn = departmentCb.getValue();
+			String[] checkArray = {courseNumberIn, courseNameIn, instructorIn, departmentIn};
 			
-			if(editing) {
-				theCourse = getCourse(courseList, Sid);
-				theCourse.setCourseNumber(courseNumberIn);
-				theCourse.setCourseName(courseNameIn);
-				theCourse.setInstructor(instructorIn);
-				theCourse.setDepartment(departmentIn);
+			if(everythingIsValid(checkArray)) {
+				if(editing) {
+					theCourse = getCourse(courseList, Sid);
+					theCourse.setCourseNumber(courseNumberIn);
+					theCourse.setCourseName(courseNameIn);
+					theCourse.setInstructor(instructorIn);
+					theCourse.setDepartment(departmentIn);
+				} else {
+					theCourse = new Course(courseNumberIn, courseNameIn, instructorIn, departmentIn);
+					courseList.add(theCourse);
+				}
+	
+				try {
+					binaryFiles.writeToFile(theCourse, !editing);
+					System.out.println("In the try binaryFile should have saved.");
+					VBox newVBox = getDetailView(courseDetails(theCourse), "Course", !editing, theCourse.getCourseID());
+					newVBox.setAlignment(Pos.CENTER);
+					HBox anHBox = new HBox(newVBox);
+					anHBox.setAlignment(Pos.CENTER);
+					borderPane.setCenter(anHBox);
+				} catch (IOException e) {
+					System.out.println("Exception: " + e);
+					e.printStackTrace();
+				}
 			} else {
-				theCourse = new Course(courseNumberIn, courseNameIn, instructorIn, departmentIn);
-				courseList.add(theCourse);
+				errorMessage.setText("Please fill out all fields");
 			}
-
-			try {
-				binaryFiles.writeToFile(theCourse, !editing);
-				System.out.println("In the try binaryFile should have saved.");
-				VBox newVBox = getDetailView(courseDetails(theCourse), "Course", !editing, theCourse.getCourseID());
-				borderPane.setCenter(new HBox(newVBox));
-			} catch (IOException e) {
-				System.out.println("Exception: " + e);
-				e.printStackTrace();
-			}
-			
 		});
+		
+		titleBx = new HBox(titleLb);
+		titleBx.setAlignment(Pos.CENTER);
+		
 		cancelButton = new Button("Cancel");
 		cancelButton.setOnAction(new CancelHandler());
-		buttonBx = new HBox(submitButton, cancelButton);
+		buttonBx = new HBox(15, submitButton, cancelButton);
+		buttonBx.setAlignment(Pos.CENTER);
 		
-		
-		view = new VBox(20, courseNumberBx, courseNameBx, instuctorBx, departmentBx, buttonBx);
+		view = new VBox(15, errorMessage, titleBx, formBx, buttonBx);
+		view.setAlignment(Pos.CENTER);
 		
 		return view;
 		
@@ -788,18 +1051,47 @@ public class JavaFinal extends Application{
 		}
 	}
 	
-	public static int indexOfMatchingEnrollmentWith(ArrayList<Enrollment> eList, int Sid, int Cid, int yr, String sem) {
+//	Checks whether form has been completely filled out
+	public static boolean everythingIsValid(String[] inputs) {
+		for(String answer: inputs) {
+			if(answer == null || answer.length() == 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+//	Returns enrollments with matching properties, includes semester
+	public static ObservableList<Enrollment> matchingEnrollments(ArrayList<Enrollment> eList, int Sid, int yr, String sem) {
+		ArrayList<Enrollment> matches = new ArrayList<Enrollment>();
+		
 		for(Enrollment enroll: eList) {
-			if(enroll.getStudentID() == Sid && enroll.getCourseID() == Cid) {
+			if(enroll.getStudentID() == Sid) {
 				if(enroll.getYear() == yr && enroll.getSemester().contains(sem)) {
-					return enroll.getEnrollmentID();
+					matches.add(enroll);
 				}
 			}
 		}
 		
-		return -1;
+		return FXCollections.observableArrayList(matches);
 	}
 	
+//	Returns enrollments with matching properties
+	public static ObservableList<Enrollment> matchingEnrollments(ArrayList<Enrollment> eList, int Cid, int yr) {
+		ArrayList<Enrollment> matches = new ArrayList<Enrollment>();
+		
+		for(Enrollment enroll: eList) {
+			if(enroll.getCourseID() == Cid) {
+				if(enroll.getYear() == yr) {
+					matches.add(enroll);
+				}
+			}
+		}
+		
+		return FXCollections.observableArrayList(matches);
+	}
+	
+//	gets list of Strings in 'id course#' format for combo box
 	public static ObservableList<String> getListOfCourses(ArrayList<Course> cList) {
 		String[] courseIdName = new String[cList.size()];
 		
@@ -808,16 +1100,19 @@ public class JavaFinal extends Application{
 			courseIdName[i] =  String.format("%s    %s",
 											 course.getCourseID(),
 											 course.getCourseNumber());
+			i++;
 		}
 		
 		return FXCollections.observableArrayList(courseIdName);
 		
 	}
 	
+//	Reads String format for CB combo box format
 	public static int getCourseIdFromString(String option) {
 		return Integer.parseInt(option.split("    ")[0]);
 	}
 	
+//	Edits a student object with new values
 	public static void editStudent(Student aStudent, String fname, String lname, String address, String city, String state) {
 		aStudent.setFirstName(fname);
 		aStudent.setLastName(lname);
@@ -826,6 +1121,7 @@ public class JavaFinal extends Application{
 		aStudent.setState(state);
 	}
 	
+//	Edits a course object with new values
 	public static void editCourse(Course aCourse, String name, String inst, String dept) {
 			
 		aCourse.setCourseName(name);
