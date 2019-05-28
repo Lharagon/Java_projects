@@ -1,4 +1,6 @@
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 import javafx.application.Application;
@@ -837,8 +839,11 @@ public class JavaFinal extends Application{
 					theEnrollment.setCourseID(courseIn);
 					theEnrollment.setSemester(semesterIn);
 					theEnrollment.setYear(yearIn);
-				} else {			
-					theEnrollment = new Enrollment(yearIn, semesterIn, studentIn, courseIn);
+				} else {
+					// Creates new id based on size of enrollmentList
+					int theId = enrollmentList.size() + 1;
+//					public Enrollment(int id, int year, String semester, int student, int course, char grade) {
+					theEnrollment = new Enrollment(theId, yearIn, semesterIn, studentIn, courseIn);
 					enrollmentList.add(theEnrollment);
 				}
 				
@@ -945,8 +950,10 @@ public class JavaFinal extends Application{
 					theStudent.setAddress(addressIn);
 					theStudent.setCity(cityIn);
 					theStudent.setState(stateIn);
-				} else {			
-					theStudent = new Student(firstIn, lastIn, addressIn, cityIn, stateIn);
+				} else {
+					// Creates new id based on size of studentList
+					int newId = studentList.size() + 1;
+					theStudent = new Student(newId, firstIn, lastIn, addressIn, cityIn, stateIn);
 					studentList.add(theStudent);
 				}
 				
@@ -1004,11 +1011,11 @@ public class JavaFinal extends Application{
 
 		instructorLb = new Label("Instructor: ");
 		instructorCb = new ComboBox<>();
-		instructorCb.getItems().addAll("Professor 1", "Professor 2", "Professor 3", "Me");
+		instructorCb.getItems().addAll("B. Gates", "W. Jones", "J. Moy", "L. Peterson", "S. Trujillo" );
 		
 		departmentLb = new Label("Department: ");
 		departmentCb = new ComboBox<>();
-		departmentCb.getItems().addAll("English", "Computer Science", "Biology", "Math", "Chemistry");
+		departmentCb.getItems().addAll("English", "Computer Science", "Biology", "Math", "Chemistry", "Economics", "Latin");
 		
 		VBox labelVx = new VBox(23, courseNumberLb, courseNameLb, instructorLb, departmentLb);
 		VBox valueVx = new VBox(15, courseNumberTx, courseNameTx, instructorCb, departmentCb);
@@ -1052,7 +1059,9 @@ public class JavaFinal extends Application{
 					theCourse.setInstructor(instructorIn);
 					theCourse.setDepartment(departmentIn);
 				} else {
-					theCourse = new Course(courseNumberIn, courseNameIn, instructorIn, departmentIn);
+					// Creates new id based on size of courseList
+					int newId = courseList.size() + 1;
+					theCourse = new Course(newId, courseNumberIn, courseNameIn, instructorIn, departmentIn);
 					courseList.add(theCourse);
 				}
 				
@@ -1283,3 +1292,429 @@ public class JavaFinal extends Application{
 	}
 
 }
+
+
+////////////////////////
+//                    //
+//	    CLASSES       //
+//                    //
+////////////////////////
+
+
+//Class handles binary files used in main
+class BinaryFiles {
+	private final int STUDENT_RECORD_SIZE = 204;
+	private final int COURSE_RECORD_SIZE = 164;
+	private final int ENROLL_RECORD_SIZE = 58;
+	private final int MAX_STR_LENGTH = 20;
+	private RandomAccessFile studentFile;
+	private RandomAccessFile courseFile;
+	private RandomAccessFile enrollmentFile;
+	
+	public BinaryFiles() throws FileNotFoundException {
+		studentFile = new RandomAccessFile("Students.dat", "rw");
+		courseFile = new RandomAccessFile("Courses.dat", "rw");
+		enrollmentFile = new RandomAccessFile("Enrollments.dat", "rw");
+	}
+	
+//	Overloaded mehtods for finding start location of record
+	public long getStartByte(Student student) {
+		return STUDENT_RECORD_SIZE * (student.getIdNumber() - 1);
+	}
+	
+	public long getStartByte(Course course) {
+		return COURSE_RECORD_SIZE * (course.getCourseID() - 1);
+	}
+	
+	public long getStartByte(Enrollment enroll) {
+		return ENROLL_RECORD_SIZE * (enroll.getEnrollmentID() - 1);
+	}
+	
+//	Methods for reading Students, Courses, Enrollment records from file
+	public Student readStudentFromFile() throws IOException {
+		int idNum;
+		String first, last, address, city, state;
+		
+		idNum = studentFile.readInt();
+		first = readAString(studentFile);
+		last = readAString(studentFile);
+		address = readAString(studentFile);
+		city = readAString(studentFile);
+		state = readAString(studentFile);
+		
+		return new Student(idNum, first, last, address, city, state);
+	}
+	
+	public Course readCourseFromFile() throws IOException {
+		String num, name, inst, dept;
+		int idNum;
+		idNum = courseFile.readInt();
+		num = readAString(courseFile);
+		name = readAString(courseFile);
+		inst = readAString(courseFile);
+		dept = readAString(courseFile);
+		
+		return new Course(idNum, num, name, inst, dept);
+	}
+	
+	public Enrollment readEnrollmentFromFile() throws IOException {
+		int Eid, Cid, Sid, year;
+		String sem;
+		char grade;
+		
+		Eid = enrollmentFile.readInt();
+		Cid = enrollmentFile.readInt();
+		Sid = enrollmentFile.readInt();
+		year = enrollmentFile.readInt();
+		sem = readAString(enrollmentFile);
+		grade = enrollmentFile.readChar();
+		
+		return new Enrollment(Eid, year, sem, Sid, Cid, grade);
+	}
+	
+//	Methods to write Student, Course, and Enrollment records to files
+	public void writeToFile(Student student, boolean adding) throws IOException {
+		if(adding) {
+			studentFile.seek(studentFile.length());
+		} else {
+			studentFile.seek(getStartByte(student));
+		}
+		
+		studentFile.writeInt(student.getIdNumber());
+		writeString(studentFile, student.getFirstName());
+		writeString(studentFile, student.getLastName());
+		writeString(studentFile, student.getAddress());
+		writeString(studentFile, student.getCity());
+		writeString(studentFile, student.getState());
+		
+	}
+	
+//	Overloaded methods for writing Courses, Students, and Enrollments
+	public void writeToFile(Course course, boolean adding) throws IOException {
+		if(adding) {
+			courseFile.seek(courseFile.length());
+		} else {
+			courseFile.seek(getStartByte(course));
+		}
+
+		courseFile.writeInt(course.getCourseID());
+		writeString(courseFile, course.getCourseNumber());
+		writeString(courseFile, course.getCourseName());
+		writeString(courseFile, course.getInstructor());
+		writeString(courseFile, course.getDepartment());
+		
+	}
+	
+	public void writeToFile(Enrollment enrollment, boolean adding) throws IOException {
+		if(adding) {
+			enrollmentFile.seek(enrollmentFile.length());
+		} else {
+			enrollmentFile.seek(getStartByte(enrollment));
+		}
+		
+		enrollmentFile.writeInt(enrollment.getEnrollmentID());
+		enrollmentFile.writeInt(enrollment.getCourseID());
+		enrollmentFile.writeInt(enrollment.getStudentID());
+		enrollmentFile.writeInt(enrollment.getYear());
+		writeString(enrollmentFile, enrollment.getSemester());
+		enrollmentFile.writeChar(enrollment.getGrade());
+	}
+	
+//	General method for writing consistently sized strings
+	public void writeString(RandomAccessFile theFile, String theString) throws IOException {
+		if (theString.length() > MAX_STR_LENGTH) {
+			for(int i = 0; i < MAX_STR_LENGTH; i++) {
+				theFile.writeChar(theString.charAt(i));
+			}
+		} else {
+			theFile.writeChars(theString);
+			
+			for (int i = 0; i < (MAX_STR_LENGTH - theString.length()); i++)
+				theFile.writeChar(' ');
+		}
+	}
+	
+//	General method for reading consistently sized strings
+	public String readAString(RandomAccessFile theFile) throws IOException {
+		
+		char[] charArray = new char[MAX_STR_LENGTH];
+		
+		for(int i = 0; i < MAX_STR_LENGTH; i++) {
+			charArray[i] = theFile.readChar();
+		}
+		
+		String theString = new String(charArray);
+		
+		return theString.trim();
+	}
+	
+	public long getNumberOfStudents() throws IOException {
+		return studentFile.length() / STUDENT_RECORD_SIZE;
+	}
+	
+	public long getNumberOfCourses() throws IOException {
+		return courseFile.length() / COURSE_RECORD_SIZE;
+	}
+	
+	public long getNumberOfEnrollments() throws IOException {
+		return enrollmentFile.length() / ENROLL_RECORD_SIZE;
+	}
+	
+	public void closeAll() throws IOException {
+		studentFile.close();
+		courseFile.close();
+		enrollmentFile.close();
+		
+	}
+	
+}
+
+//Student class
+class Student {
+	
+	final private int idNumber;
+	private String firstName;
+	private String lastName;
+	private String address;
+	private String city;
+	private String state;
+
+	
+//	Used when loading students and adding
+	public Student(int id, String first, String last, String address, String city, String state) {
+
+		this.idNumber = id;
+		this.firstName = first;
+		this.lastName = last;
+		this.address = address;
+		this.city = city;
+		this.state = state;
+	}
+	
+	public void setFirstName(String first) {
+		this.firstName = first;
+	}
+	
+	public void setLastName(String last) {
+		this.lastName = last;
+	}
+	
+	public int getIdNumber() {
+		return idNumber;
+	}
+	
+	public String getFirstName() {
+		return firstName;
+	}
+	
+	public String getLastName() {
+		return lastName;
+	}
+	
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+	
+	public String toString() {
+		return String.format(
+				
+				"ID Number: %s\n"
+				+ "First Name: %s\n"
+				+ "Last Name: %s\n"
+				+ "Address: %s\n"
+				+ "City: %s\n"
+				+ "State: %s\n",
+				getIdNumber(), 
+				getFirstName(), 
+				getLastName(),
+				getAddress(),
+				getCity(),
+				getState()); 
+	}
+
+}
+
+class Course {
+	
+	final private int courseID;
+	private String courseNumber;
+	private String courseName;
+	private String instructor;
+	private String department;
+	
+//	Used when loading courses
+	public Course(int id, String number, String name, String instructor, String dept) {
+		courseID = id;
+		setCourseNumber(number);
+		setCourseName(name);
+		setInstructor(instructor);
+		setDepartment(dept);
+	}
+	
+	public int getCourseID() {
+		return courseID;
+	}
+
+	public String getCourseName() {
+		return courseName;
+	}
+
+	public void setCourseName(String courseName) {
+		this.courseName = courseName;
+	}
+
+	public String getInstructor() {
+		return instructor;
+	}
+
+	public void setInstructor(String instructor) {
+		this.instructor = instructor;
+	}
+
+	public String getDepartment() {
+		return department;
+	}
+
+	public void setDepartment(String department) {
+		this.department = department;
+	}
+
+	public String getCourseNumber() {
+		return courseNumber;
+	}
+
+	public void setCourseNumber(String courseNumber) {
+		this.courseNumber = courseNumber;
+	}
+	
+	public String toString() {
+		return String.format(
+				"Course ID: %s\n"
+				+ "Course Number: %s\n"
+				+ "Course Name: %s\n"
+				+ "Course Instructor: %s\n"
+				+ "Course Department: %s\n",
+				getCourseID(),
+				getCourseNumber(),
+				getCourseName(),
+				getInstructor(),
+				getDepartment());
+	}
+}
+
+class Enrollment {
+	
+	final private int enrollmentID;
+	private int year;
+	private String semester;
+	private int studentID;
+	private int courseID;
+	private char grade = '*';
+	
+//	Used when creating new enrollments, no grade input
+	public Enrollment(int id, int year, String semester, int student, int course) {
+		
+		this.enrollmentID = id;
+		this.setYear(year);
+		this.setSemester(semester);
+		this.setStudentID(student);
+		this.setCourseID(course);
+	}
+	
+//	Used when loading enrollments
+	public Enrollment(int id, int year, String semester, int student, int course, char grade) {
+		
+		this.enrollmentID = id;
+		this.setYear(year);
+		this.setSemester(semester);
+		this.setStudentID(student);
+		this.setCourseID(course);
+		this.setGrade(grade);
+	}
+	
+	public int getEnrollmentID() {
+		return enrollmentID;
+	}
+
+	public int getYear() {
+		return year;
+	}
+
+	public void setYear(int year) {
+		this.year = year;
+	}
+
+	public String getSemester() {
+		return semester;
+	}
+
+	public void setSemester(String semester) {
+		this.semester = semester;
+	}
+
+	public char getGrade() {
+		return grade;
+	}
+
+	public void setGrade(char grade) {
+		this.grade = grade;
+	}
+
+	public int getStudentID() {
+		return studentID;
+	}
+
+	public void setStudentID(int studentID) {
+		this.studentID = studentID;
+	}
+
+	public int getCourseID() {
+		return courseID;
+	}
+
+	public void setCourseID(int courseID) {
+		this.courseID = courseID;
+	}
+	
+	public String toString() {
+		return String.format(
+				"Enrollment ID: %s\n"
+				+ "Course ID: %s\n"
+				+ "Student ID: %s\n"
+				+ "Year: %s\n"
+				+ "Semester: %s\n"
+				+ "Grade: %s\n",
+				getEnrollmentID(),
+				getCourseID(),
+				getStudentID(),
+				getYear(),
+				getSemester(),
+				getGrade());
+	}
+	
+}
+
+
+
+
+
