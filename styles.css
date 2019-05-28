@@ -1,0 +1,24 @@
+.error-label {
+	-fx-text-fill: red;
+}
+
+.welcome-label {
+	-fx-text-weight: 900;
+	-fx-font-size: 30pt;
+	-fx-text-fill: gray;
+}
+
+.welcome-message {
+	-fx-font-family: Arial;
+	-fx-font-size: 13pt;
+}
+
+.title-label {
+	-fx-text-weight: bold;
+	-fx-font-size: 15pt;
+}
+
+.detail-label {
+	-fx-text-alignment: right;
+	-fx-font-weight: bold;
+}
